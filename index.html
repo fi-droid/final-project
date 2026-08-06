@@ -58,7 +58,7 @@
       background: #2b1f17;
     }
 
-    #storyboard-img {
+    #storyboard-video {
       width: 100%;
       height: auto;
       display: block;
@@ -416,9 +416,12 @@
   <!-- Main Game Title at the Top -->
   <h1 id="game-title">Dr. Outsider: A Visual Novel</h1>
 
-  <!-- Storyboard Panel Image Banner (Matches Exact File Name in Repo) -->
+  <!-- Storyboard Frame Banner (Updated to MP4 Video Element) -->
   <div id="storyboard-frame-container">
-    <img id="storyboard-img" src="input_file_0.png" alt="The Doctor's Portrait Storyboard Panel">
+    <video id="storyboard-video" autoplay loop muted playsinline>
+      <source src="maury and marty 1.mp4" type="video/mp4">
+      Your browser does not support the video tag.
+    </video>
   </div>
 
   <!-- Character Stage (Marty Left, Maury Right) -->
