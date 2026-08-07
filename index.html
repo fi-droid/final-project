@@ -256,9 +256,14 @@
       box-shadow: 0 6px 0 #047857, 0 10px 20px rgba(16, 185, 129, 0.25);
       text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
       transition: all 0.3s ease;
+      cursor: pointer;
     }
 
-    /* Progress Meter Section */
+    #instruction-banner.no-click {
+      cursor: default;
+    }
+
+    /* Progress Label Container */
     #meter-container { position: relative; margin-bottom: 20px; }
     .meter-section {
       background: #f3e9d7;
@@ -266,12 +271,26 @@
       border-radius: 16px;
       border: 2px solid #d5c3aa;
     }
-    .meter-labels { display: flex; justify-content: space-between; font-family: 'Fredoka', sans-serif; font-size: 0.85rem; font-weight: 600; margin-bottom: 6px; }
+    .meter-labels { display: flex; justify-content: space-between; font-family: 'Fredoka', sans-serif; font-size: 0.85rem; font-weight: 600; }
     .label-left { color: #dc2626; }
     .label-right { color: #059669; }
-    
-    #meter-track { width: 100%; background: #dfd1bd; height: 16px; border-radius: 8px; overflow: hidden; position: relative; border: 2px solid #bdab92; }
-    #meter-fill { height: 100%; width: 50%; background: #f59e0b; transition: width 0.5s cubic-bezier(0.34, 1.56, 0.64, 1), background-color 0.4s ease; }
+
+    #meter-track { 
+      width: 100%; 
+      background: #dfd1bd; 
+      height: 16px; 
+      border-radius: 8px; 
+      overflow: hidden; 
+      position: relative; 
+      border: 2px solid #bdab92;
+      margin-top: 8px;
+    }
+    #meter-fill { 
+      height: 100%; 
+      width: 50%; 
+      background: #f59e0b; 
+      transition: width 0.5s cubic-bezier(0.34, 1.56, 0.64, 1), background-color 0.4s ease; 
+    }
     #meter-center-marker { position: absolute; left: 50%; top: 0; bottom: 0; width: 3px; background: #fff; z-index: 2; transform: translateX(-50%); }
 
     /* Floating Cues */
@@ -455,10 +474,10 @@
   <div id="memory-tray"></div>
 
   <!-- Detached Standalone All-Green Instruction Banner Section -->
-  <div id="instruction-banner">👇 Choose Dr. Welsh's response</div>
+  <div id="instruction-banner" class="no-click">👇 Choose Dr. Welsh's response</div>
 
-  <!-- Progress Meter Container -->
-  <div id="meter-container">
+  <!-- Progress Meter Container (Visible only during Choice Phase) -->
+  <div id="meter-container" style="display: none;">
     <div class="meter-section">
       <div class="meter-labels">
         <span class="label-left">💥 Choice 1 of 10</span>
@@ -473,8 +492,8 @@
   </div>
 
   <!-- Dynamic Standalone Choice Options Area -->
-  <div id="choice-area" class="marty-choice-theme">
-    <div id="choice-area-header">Select Dr. Welsh's Statement:</div>
+  <div id="choice-area" class="marty-choice-theme" style="display: none;">
+    <div id="choice-area-header" style="display: none;">Select Dr. Welsh's Statement:</div>
     <div id="choices"></div>
   </div>
 
@@ -485,6 +504,10 @@
 <script>
   let gameState = {
     step: 0,
+    seqIndex: 0,
+    inOutro: false,
+    selectedOption: null,
+    phase: 'dialogue', // 'dialogue' or 'choice'
     resolutionProgress: 10,
     vulnerability: 20,
     unlockedMemories: [],
@@ -1120,38 +1143,46 @@
     type();
   }
 
-  function playSequence(sequence, callback) {
-    if (!sequence || sequence.length === 0) {
-      if (callback) callback();
+  function renderCurrentSequenceLine() {
+    const currentStepData = gameScript[gameState.step];
+    const currentSeq = gameState.inOutro 
+      ? gameState.selectedOption.outroSequence 
+      : currentStepData.introSequence;
+
+    if (!currentSeq || gameState.seqIndex >= currentSeq.length) {
+      if (!gameState.inOutro) {
+        setupDialoguePhasePrompt(currentStepData);
+      } else {
+        gameState.step++;
+        gameState.seqIndex = 0;
+        gameState.inOutro = false;
+        gameState.selectedOption = null;
+        loadScriptStep();
+      }
       return;
     }
 
-    let index = 0;
+    const item = currentSeq[gameState.seqIndex];
+    const dialogueBox = document.getElementById("top-dialogue-box");
+    const speakerTag = document.getElementById("speaker-tag");
 
-    function next() {
-      if (index < sequence.length) {
-        const item = sequence[index];
-        const dialogueBox = document.getElementById("top-dialogue-box");
-        const speakerTag = document.getElementById("speaker-tag");
+    const isMaury = item.key === 'maury';
+    dialogueBox.className = isMaury ? 'maury-theme' : 'marty-theme';
+    speakerTag.className = isMaury ? 'maury-text' : 'marty-text';
+    speakerTag.innerText = item.speaker;
 
-        const isMaury = item.key === 'maury';
-        dialogueBox.className = isMaury ? 'maury-theme' : 'marty-theme';
-        speakerTag.className = isMaury ? 'maury-text' : 'marty-text';
-        speakerTag.innerText = item.speaker;
+    document.getElementById("card-maury").classList.toggle("active", isMaury);
+    document.getElementById("card-marty").classList.toggle("active", !isMaury);
 
-        document.getElementById("card-maury").classList.toggle("active", isMaury);
-        document.getElementById("card-marty").classList.toggle("active", !isMaury);
+    typeWriterText(`"${item.text}"`, "dialogue-text", item.key);
 
-        typeWriterText(`"${item.text}"`, "dialogue-text", item.key);
-
-        index++;
-        setTimeout(next, Math.max(2200, item.text.length * 40));
-      } else {
-        if (callback) callback();
-      }
-    }
-
-    next();
+    const banner = document.getElementById("instruction-banner");
+    banner.className = "";
+    banner.innerText = "👉 Click to continue line...";
+    banner.onclick = () => {
+      gameState.seqIndex++;
+      renderCurrentSequenceLine();
+    };
   }
 
   function loadScriptStep() {
@@ -1161,16 +1192,43 @@
     }
 
     const currentStepData = gameScript[gameState.step];
+    gameState.phase = 'dialogue';
+
+    document.getElementById("choice-area").style.display = "none";
+    document.getElementById("choice-area-header").style.display = "none";
+    document.getElementById("meter-container").style.display = "none";
 
     if (currentStepData.introSequence && currentStepData.introSequence.length > 0) {
-      document.getElementById("instruction-banner").innerText = "⏳ Characters are speaking...";
       document.getElementById("choices").innerHTML = "";
-      playSequence(currentStepData.introSequence, () => {
-        renderChoiceOptions(currentStepData);
-      });
+      gameState.seqIndex = 0;
+      gameState.inOutro = false;
+      renderCurrentSequenceLine();
     } else {
-      renderChoiceOptions(currentStepData);
+      setupDialoguePhasePrompt(currentStepData);
     }
+  }
+
+  function setupDialoguePhasePrompt(stepData) {
+    const isMauryPrompt = stepData.promptSpeaker === 'maury';
+    const targetSpeaker = isMauryPrompt ? "Maury" : "Dr. Welsh";
+    const banner = document.getElementById("instruction-banner");
+    
+    banner.className = "";
+    banner.innerText = `👇 Choose ${targetSpeaker}'s Response ->`;
+    banner.onclick = () => transitionToChoicePhase(stepData);
+
+    document.getElementById("choices").innerHTML = "";
+    updateProgressBar(0);
+  }
+
+  function transitionToChoicePhase(stepData) {
+    gameState.phase = 'choice';
+
+    document.getElementById("choice-area").style.display = "block";
+    document.getElementById("choice-area-header").style.display = "block";
+    document.getElementById("meter-container").style.display = "block";
+
+    renderChoiceOptions(stepData);
   }
 
   function renderChoiceOptions(stepData) {
@@ -1180,12 +1238,14 @@
     document.getElementById("card-marty").classList.toggle("active", !isMauryPrompt);
 
     const banner = document.getElementById("instruction-banner");
-    banner.innerText = `👇 Choose ${isMauryPrompt ? 'Maury' : 'Dr. Welsh'}'s response`;
+    banner.className = "no-click";
+    banner.onclick = null;
+    banner.innerText = stepData.headerText;
 
     const choiceArea = document.getElementById("choice-area");
     choiceArea.className = isMauryPrompt ? "maury-choice-theme" : "marty-choice-theme";
 
-    document.getElementById("choice-area-header").innerText = stepData.headerText;
+    document.getElementById("choice-area-header").innerText = `Select ${isMauryPrompt ? 'Maury' : 'Dr. Welsh'}'s Option:`;
 
     const choicesDiv = document.getElementById("choices");
     choicesDiv.innerHTML = "";
@@ -1229,14 +1289,28 @@
     updateProgressBar(selectedOpt.progressDelta);
 
     document.getElementById("choices").innerHTML = "";
-    document.getElementById("instruction-banner").innerText = "⏳ Processing conversation...";
 
-    setTimeout(() => {
-      playSequence(selectedOpt.outroSequence, () => {
+    document.getElementById("choice-area").style.display = "none";
+    document.getElementById("choice-area-header").style.display = "none";
+    document.getElementById("meter-container").style.display = "none";
+
+    const banner = document.getElementById("instruction-banner");
+    banner.className = "";
+    banner.innerText = "👉 Click to continue conversation...";
+    banner.onclick = () => {
+      if (selectedOpt.outroSequence && selectedOpt.outroSequence.length > 0) {
+        gameState.selectedOption = selectedOpt;
+        gameState.inOutro = true;
+        gameState.seqIndex = 0;
+        renderCurrentSequenceLine();
+      } else {
         gameState.step++;
+        gameState.seqIndex = 0;
+        gameState.inOutro = false;
+        gameState.selectedOption = null;
         loadScriptStep();
-      });
-    }, 1800);
+      }
+    };
   }
 
   function renderMemoryTray() {
@@ -1265,19 +1339,17 @@
   function updateProgressBar(delta) {
     gameState.resolutionProgress = Math.max(10, Math.min(100, gameState.resolutionProgress + delta));
 
-    const fill = document.getElementById("meter-fill");
     const statusLabel = document.getElementById("meter-status");
-
-    fill.style.width = `${((gameState.step + 1) / 10) * 100}%`;
     statusLabel.innerText = `Choice ${Math.min(10, gameState.step + 1)} of 10`;
+
+    const fill = document.getElementById("meter-fill");
+    fill.style.width = `${((gameState.step + 1) / 10) * 100}%`;
 
     if (gameState.resolutionProgress > 70) {
       document.body.style.background = "radial-gradient(circle at 50% 30%, #4a382c 0%, #1c140e 100%)";
-      fill.style.backgroundColor = "#10b981";
       statusLabel.style.color = "#059669";
     } else {
       document.body.style.background = "radial-gradient(circle at 50% 30%, #3a2e4c 0%, #1a162b 100%)";
-      fill.style.backgroundColor = "#f59e0b";
       statusLabel.style.color = "#d97706";
     }
   }
@@ -1293,11 +1365,15 @@
     typeWriterText("The dialogue loop is complete. Maury and Dr. Welsh have woven art, clinical insight, and mutual empathy into a unified proposal for their return to Earth.", "dialogue-text", "marty");
 
     dialogueBox.style.borderColor = "#10b981";
+    banner.className = "no-click";
+    banner.onclick = null;
     banner.innerText = "✨ Storyboard Ended: Shared Reincarnation Covenant Reached";
     banner.style.background = "linear-gradient(135deg, #10b981 0%, #059669 100%)";
     banner.style.borderColor = "#34d399";
     banner.style.boxShadow = "0 6px 0 #047857";
 
+    document.getElementById("choice-area").style.display = "none";
+    document.getElementById("meter-container").style.display = "none";
     document.getElementById("choices").innerHTML = "";
     resetBtn.style.display = "block";
   }
@@ -1305,6 +1381,10 @@
   function resetGame() {
     gameState = {
       step: 0,
+      seqIndex: 0,
+      inOutro: false,
+      selectedOption: null,
+      phase: 'dialogue',
       resolutionProgress: 10,
       vulnerability: 20,
       unlockedMemories: [],
@@ -1321,11 +1401,15 @@
     typeWriterText("Maury Ornest and Dr. Marty Welsh are waiting in a holding room for people who are about to re-incarnate on Earth...", "dialogue-text", "maury");
 
     const banner = document.getElementById("instruction-banner");
+    banner.className = "no-click";
+    banner.onclick = null;
     banner.innerText = "👇 Choose Dr. Welsh's response";
     banner.style.background = "linear-gradient(135deg, #10b981 0%, #059669 100%)";
     banner.style.borderColor = "#34d399";
     banner.style.boxShadow = "0 6px 0 #047857";
 
+    document.getElementById("choice-area").style.display = "none";
+    document.getElementById("meter-container").style.display = "none";
     document.getElementById("reset-btn").style.display = "none";
 
     init();
