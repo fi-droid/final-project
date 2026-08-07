@@ -133,7 +133,6 @@
       width: 0%;
       background: #10b981;
       z-index: 1;
-      transition: width 0.05s linear;
       border-radius: 18px 0 0 18px;
     }
 
@@ -1052,6 +1051,7 @@
 
         if (holdProgress >= holdDurationMs) {
           clearInterval(holdInterval);
+          stopHolding();
           transitionOutOfIntro();
         }
       }, 50);
@@ -1320,7 +1320,7 @@
       currentSpeaker: 'maury'
     };
 
-    document.getElementById("top-dialogue-boxinnerHTML = "";
+    document.getElementById("top-dialogue-box").innerHTML = "";
     document.getElementById("top-dialogue-box").style.display = "none";
     document.getElementById("instruction-banner").style.display = "none";
     document.getElementById("intro-screen").style.display = "block";
