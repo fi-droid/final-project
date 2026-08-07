@@ -65,6 +65,83 @@
       object-fit: cover;
     }
 
+    /* Story Introduction Overlay Screen */
+    #intro-screen {
+      background: linear-gradient(135deg, #fffdf7 0%, #fff7eb 100%);
+      border: 3px solid #e5933d;
+      border-radius: 20px;
+      padding: 24px;
+      margin-bottom: 20px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.06);
+      text-align: center;
+    }
+
+    #intro-title {
+      font-family: 'Fredoka', sans-serif;
+      font-size: 1.4rem;
+      color: #d97706;
+      margin-bottom: 12px;
+    }
+
+    #intro-text {
+      font-size: 1.05rem;
+      line-height: 1.6;
+      color: #4a382d;
+      font-weight: 600;
+      margin-bottom: 20px;
+      white-space: pre-wrap;
+    }
+
+    /* Hold-to-Reflect Button Styles */
+    #hold-btn-container {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 8px;
+    }
+
+    #hold-btn {
+      position: relative;
+      width: 100%;
+      max-width: 320px;
+      padding: 16px;
+      background: #f59e0b;
+      color: #fff;
+      font-family: 'Fredoka', sans-serif;
+      font-size: 1.1rem;
+      font-weight: 600;
+      border: none;
+      border-radius: 20px;
+      cursor: pointer;
+      box-shadow: 0 4px 0 #b45309;
+      overflow: hidden;
+      user-select: none;
+      -webkit-user-select: none;
+      transition: transform 0.1s ease;
+    }
+
+    #hold-btn:active {
+      transform: scale(0.98);
+    }
+
+    /* Fill bar representing hold progress */
+    #hold-progress-fill {
+      position: absolute;
+      left: 0;
+      top: 0;
+      bottom: 0;
+      width: 0%;
+      background: #10b981;
+      z-index: 1;
+      transition: width 0.05s linear;
+      border-radius: 18px 0 0 18px;
+    }
+
+    #hold-btn-text {
+      position: relative;
+      z-index: 2;
+    }
+
     /* Dialogue Log Box (Scrollable Conversation Container) */
     #top-dialogue-box {
       background: #fffdf7;
@@ -343,14 +420,26 @@
     </video>
   </div>
 
-  <!-- Scrollable Dialogue Log Box -->
-  <div id="top-dialogue-box" class="maury-theme"></div>
+  <!-- Story Introduction Overlay Screen -->
+  <div id="intro-screen">
+    <h2 id="intro-title">The Waiting Room of Limbo</h2>
+    <div id="intro-text">Maury Ornest and Dr. Marty Welsh find themselves in a quiet, warmly decorated waiting room. Maury has spent his time here meticulously arranging vibrant art pieces, transforming the neutral threshold into an expressive sanctuary. This liminal space is reserved for souls deciding whether they are ready to return and reincarnate on Earth, or if the burdens down below are still too heavy to bear.</div>
+    <div id="hold-btn-container">
+      <button id="hold-btn">
+        <div id="hold-progress-fill"></div>
+        <span id="hold-btn-text">Hold to Reflect & Enter Room</span>
+      </button>
+    </div>
+  </div>
+
+  <!-- Scrollable Dialogue Log Box (Hidden during intro) -->
+  <div id="top-dialogue-box" class="maury-theme" style="display: none;"></div>
 
   <!-- Memory Hooks Tray -->
   <div id="memory-tray"></div>
 
-  <!-- Detached Standalone All-Green Instruction Banner Section -->
-  <div id="instruction-banner">👇 Choose Maury's response -></div>
+  <!-- Detached Standalone All-Green Instruction Banner Section (Hidden during intro) -->
+  <div id="instruction-banner" style="display: none;">👇 Choose Maury's response -></div>
 
   <!-- Progress Meter Container (Visible only during Choice Phase) -->
   <div id="meter-container" style="display: none;">
@@ -379,13 +468,18 @@
 <script>
   let gameState = {
     step: 0,
-    phase: 'dialogue', // 'dialogue', 'choice', or 'reaction'
+    phase: 'intro', // 'intro', 'dialogue', 'choice', or 'reaction'
     resolutionProgress: 10,
     unlockedMemories: [],
     currentSpeaker: 'maury'
   };
 
   let typewriterTimeout = null;
+
+  // Hold-to-Reflect Variables
+  let holdInterval = null;
+  let holdProgress = 0;
+  const holdDurationMs = 1500; // 1.5 seconds to fill
 
   const charImages = {
     maury: "2.png",
@@ -937,6 +1031,53 @@
   ];
 
   function init() {
+    setupHoldToReflectButton();
+  }
+
+  // Setup Hold-to-Reflect Prologue Mechanics
+  function setupHoldToReflectButton() {
+    const holdBtn = document.getElementById("hold-btn");
+    const progressFill = document.getElementById("hold-progress-fill");
+
+    function startHolding(e) {
+      if (gameState.phase !== 'intro') return;
+      e.preventDefault();
+
+      if (holdInterval) clearInterval(holdInterval);
+
+      holdInterval = setInterval(() => {
+        holdProgress += 50;
+        let percent = (holdProgress / holdDurationMs) * 100;
+        progressFill.style.width = `${Math.min(100, percent)}%`;
+
+        if (holdProgress >= holdDurationMs) {
+          clearInterval(holdInterval);
+          transitionOutOfIntro();
+        }
+      }, 50);
+    }
+
+    function stopHolding() {
+      if (gameState.phase !== 'intro') return;
+      if (holdInterval) clearInterval(holdInterval);
+      holdProgress = 0;
+      progressFill.style.width = '0%';
+    }
+
+    holdBtn.addEventListener("mousedown", startHolding);
+    holdBtn.addEventListener("touchstart", startHolding);
+
+    window.addEventListener("mouseup", stopHolding);
+    window.addEventListener("touchend", stopHolding);
+    holdBtn.addEventListener("mouseleave", stopHolding);
+  }
+
+  function transitionOutOfIntro() {
+    document.getElementById("intro-screen").style.display = "none";
+    document.getElementById("top-dialogue-box").style.display = "block";
+    document.getElementById("instruction-banner").style.display = "block";
+
+    gameState.phase = 'dialogue';
     loadScriptStep();
   }
 
@@ -1173,13 +1314,16 @@
   function resetGame() {
     gameState = {
       step: 0,
-      phase: 'dialogue',
+      phase: 'intro',
       resolutionProgress: 10,
       unlockedMemories: [],
       currentSpeaker: 'maury'
     };
 
-    document.getElementById("top-dialogue-box").innerHTML = "";
+    document.getElementById("top-dialogue-boxinnerHTML = "";
+    document.getElementById("top-dialogue-box").style.display = "none";
+    document.getElementById("instruction-banner").style.display = "none";
+    document.getElementById("intro-screen").style.display = "block";
 
     const banner = document.getElementById("instruction-banner");
     banner.className = "no-click";
