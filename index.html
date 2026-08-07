@@ -129,7 +129,7 @@
       height: 100%;
       border-radius: 50%;
       background-size: cover;
-      background-position: center 15%; /* Ensures face stays well-proportioned in circle */
+      background-position: center 15%;
       background-repeat: no-repeat;
       border: 4px solid #fff;
       box-shadow: 0 4px 8px rgba(0,0,0,0.15);
@@ -168,7 +168,7 @@
     .char-card[data-char="maury"].active .status-badge { background: #fef3c7; color: #b45309; }
     .char-card[data-char="marty"].active .status-badge { background: #dbeafe; color: #1e40af; }
 
-    /* Dialogue Box (Positioned Below Character Stage) */
+    /* Dialogue Box */
     #top-dialogue-box {
       background: #fffdf7;
       border: 3px solid #cbac88;
@@ -216,7 +216,7 @@
       word-wrap: break-word;
       word-break: break-word;
       hyphens: auto;
-      white-space: normal;
+      white-space: pre-wrap;
     }
 
     /* Memory Hooks Tray */
@@ -240,7 +240,7 @@
       animation: slideInCard 0.3s ease forwards;
     }
 
-    /* Detached Standalone All-Green Instruction Section */
+    /* Instruction Banner */
     #instruction-banner {
       font-family: 'Fredoka', sans-serif;
       font-size: 1.1rem;
@@ -263,7 +263,7 @@
       cursor: default;
     }
 
-    /* Progress Label Container */
+    /* Progress Container */
     #meter-container { position: relative; margin-bottom: 20px; }
     .meter-section {
       background: #f3e9d7;
@@ -318,7 +318,7 @@
       100% { opacity: 0; transform: translate(-50%, -130px) scale(0.95); }
     }
 
-    /* Dynamic Standalone Response Selection Box */
+    /* Choice Area */
     #choice-area {
       border-radius: 20px;
       padding: 18px;
@@ -332,12 +332,6 @@
       box-shadow: inset 0 2px 6px rgba(245, 158, 11, 0.08), 0 4px 0 #d97706;
     }
 
-    #choice-area.marty-choice-theme {
-      background: #f0f7ff;
-      border: 3px solid #3b82f6;
-      box-shadow: inset 0 2px 6px rgba(59, 130, 246, 0.08), 0 4px 0 #2563eb;
-    }
-
     #choice-area-header {
       font-family: 'Fredoka', sans-serif;
       font-size: 0.95rem;
@@ -347,10 +341,8 @@
       margin-bottom: 12px;
       text-align: left;
       transition: color 0.3s ease;
+      color: #b45309;
     }
-
-    #choice-area.maury-choice-theme #choice-area-header { color: #b45309; }
-    #choice-area.marty-choice-theme #choice-area-header { color: #1d4ed8; }
 
     #choices { display: flex; flex-direction: column; gap: 10px; position: relative; }
     
@@ -384,13 +376,6 @@
       background: #fffdf2;
       transform: translateY(-2px);
       box-shadow: 0 6px 0 #d97706;
-    }
-    
-    .choice-btn.marty-btn:hover {
-      border-color: #3b82f6;
-      background: #f4f8ff;
-      transform: translateY(-2px);
-      box-shadow: 0 6px 0 #2563eb;
     }
 
     .choice-tag {
@@ -435,7 +420,7 @@
   <!-- Main Game Title at the Top -->
   <h1 id="game-title">Dr. Outsider: A Visual Novel</h1>
 
-  <!-- Storyboard Frame Banner (Updated to MP4 Video Element) -->
+  <!-- Storyboard Frame Banner -->
   <div id="storyboard-frame-container">
     <video id="storyboard-video" autoplay loop muted playsinline>
       <source src="maury and marty 1.mp4" type="video/mp4">
@@ -460,7 +445,7 @@
       </div>
       <div class="char-name">Maury Ornest</div>
       <div class="char-role">Artist & Expressionist</div>
-      <span id="badge-maury" class="status-badge">[Calm]</span>
+      <span id="badge-maury" class="status-badge">[Playing]</span>
     </div>
   </div>
 
@@ -474,15 +459,15 @@
   <div id="memory-tray"></div>
 
   <!-- Detached Standalone All-Green Instruction Banner Section -->
-  <div id="instruction-banner" class="no-click">👇 Choose Dr. Welsh's response</div>
+  <div id="instruction-banner">👇 Choose Maury's response -></div>
 
   <!-- Progress Meter Container (Visible only during Choice Phase) -->
   <div id="meter-container" style="display: none;">
     <div class="meter-section">
       <div class="meter-labels">
-        <span class="label-left">💥 Choice 1 of 10</span>
-        <span id="meter-status" style="color: #d97706;">Progress: 10%</span>
-        <span class="label-right">🤝 Choice 10 of 10</span>
+        <span class="label-left">💥 Micro-Step 1 of 18</span>
+        <span id="meter-status" style="color: #d97706;">Progress: 5%</span>
+        <span class="label-right">🤝 Step 18 of 18</span>
       </div>
       <div id="meter-track">
         <div id="meter-center-marker"></div>
@@ -492,8 +477,8 @@
   </div>
 
   <!-- Dynamic Standalone Choice Options Area -->
-  <div id="choice-area" class="marty-choice-theme" style="display: none;">
-    <div id="choice-area-header" style="display: none;">Select Dr. Welsh's Statement:</div>
+  <div id="choice-area" class="maury-choice-theme" style="display: none;">
+    <div id="choice-area-header" style="display: none;">Select Maury's Response:</div>
     <div id="choices"></div>
   </div>
 
@@ -504,617 +489,450 @@
 <script>
   let gameState = {
     step: 0,
-    seqIndex: 0,
-    inOutro: false,
-    selectedOption: null,
-    phase: 'dialogue', // 'dialogue' or 'choice'
+    phase: 'dialogue', // Two-Phase Clean Flow: 'dialogue' or 'choice'
     resolutionProgress: 10,
-    vulnerability: 20,
     unlockedMemories: [],
-    currentSpeaker: 'marty'
+    currentSpeaker: 'maury'
   };
 
   let typewriterTimeout = null;
 
-  // Character Images
   const charImages = {
     maury: "2.png",
     marty: "1.png"
   };
 
-  // 10 Interactive Choice Nodes Script Architecture
+  // Consolidated Single-String Dialogue Micro Nodes (Locked to Maury's Perspective)
   const gameScript = [
     {
-      // CHOICE 1
-      speaker: "marty",
-      introSequence: [
-        { speaker: "Dr. Marty Welsh", key: "marty", text: "Wow, this room is beautiful." },
-        { speaker: "Maury Ornest", key: "maury", text: "Thanks. You’re that doctor who died from ALS." },
-        { speaker: "Dr. Marty Welsh", key: "marty", text: "Yes, ha-ha. I watched the movie about you. And listened to your journals. Do you have them here?" },
-        { speaker: "Maury Ornest", key: "maury", text: "Yes, but they’re not for anyone else to read. Laura messed that up. Those were my most private thoughts." }
-      ],
-      promptSpeaker: "marty",
-      headerText: "Choice 1: Responding to Privacy Violation",
+      speakerKey: "marty",
+      speakerName: "Dr. Marty Welsh",
+      promptText: "Wow, this room is beautiful.",
+      headerText: "Step 1: Identifying Dr. Welsh",
       options: [
         {
-          label: "Option A (Therapeutic Focus): 'Maybe you should consider going public with your thoughts.'",
-          dialogueText: "Maybe you should consider going public with your thoughts.",
+          label: "Option A (Direct Acknowledgment): 'Thanks. You’re that doctor who died from ALS.'",
+          dialogueText: "Thanks. You’re that doctor who died from ALS.",
           progressDelta: 5,
-          vulnerabilityDelta: 5,
           type: "calm",
-          tag: "🕊️ Therapeutic Focus",
-          unlocksMemory: "📖 Private Journals",
-          outroSequence: [
-            { speaker: "Maury Ornest", key: "maury", text: "That’s easy for you to say, Mr. Successful Dr. Anonymous. You had a successful career. You had a wife who loved you and stayed with you. You’re not like me." },
-            { speaker: "Dr. Marty Welsh", key: "marty", text: "Yes, I did. And part of the way I did that was by not being lonely. Like Jeremy Nobel says." },
-            { speaker: "Maury Ornest", key: "maury", text: "What does he know? He had a sister with a disability, sure, but did he have any issues? Did he break his hand and end his chance at his career? He just kept succeeding." },
-            { speaker: "Dr. Marty Welsh", key: "marty", text: "Yeah, he did have some setbacks, and not as big as you or me." },
-            { speaker: "Maury Ornest", key: "maury", text: "Exactly! Easy for him to tell us not to be lonely. You even said in your book how you felt alone." }
-          ]
+          tag: "🕊️ Direct",
+          unlocksMemory: "🩺 Recognized Dr. Welsh"
         },
         {
-          label: "Option B (Empathy Focus): 'It must have felt like a violation...'",
-          dialogueText: "It must have felt like a violation to have your private thoughts exposed without consent... but going public on your own terms could change that.",
-          progressDelta: 10,
-          vulnerabilityDelta: 15,
-          type: "calm",
-          tag: "🕊️ Empathy Focus",
-          unlocksMemory: "📖 Private Journals",
-          outroSequence: [
-            { speaker: "Maury Ornest", key: "maury", text: "That’s easy for you to say, Mr. Successful Dr. Anonymous. You had a successful career. You had a wife who loved you and stayed with you. You’re not like me." },
-            { speaker: "Dr. Marty Welsh", key: "marty", text: "Yes, I did. And part of the way I did that was by not being lonely. Like Jeremy Nobel says." },
-            { speaker: "Maury Ornest", key: "maury", text: "What does he know? He had a sister with a disability, sure, but did he have any issues? Did he break his hand and end his chance at his career? He just kept succeeding." },
-            { speaker: "Dr. Marty Welsh", key: "marty", text: "Yeah, he did have some setbacks, and not as big as you or me." },
-            { speaker: "Maury Ornest", key: "maury", text: "Exactly! Easy for him to tell us not to be lonely. You even said in your book how you felt alone." }
-          ]
-        }
-      ]
-    },
-    {
-      // CHOICE 2
-      speaker: "marty",
-      introSequence: [],
-      promptSpeaker: "marty",
-      headerText: "Choice 2: Challenging Maury's Isolation",
-      options: [
-        {
-          label: "Option A (Direct Purpose): 'Then why did you even bother coming here, Maury?'",
-          dialogueText: "Then why did you even bother coming here, Maury?",
-          progressDelta: 10,
-          vulnerabilityDelta: 10,
+          label: "Option B (Guarded Observation): 'I know who you are. The ALS doctor from the books.'",
+          dialogueText: "I know who you are. The ALS doctor from the books.",
+          progressDelta: 5,
           type: "tense",
-          tag: "⚡ Direct Purpose",
-          unlocksMemory: "🤝 Jeremy Nobel Reading",
-          outroSequence: [
-            { speaker: "Maury Ornest", key: "maury", text: "(drops his head) I don’t know. I thought maybe… after watching the movie they made about me… That someone would care. Or I could help someone. I thought I could matter, finally." },
-            { speaker: "Dr. Marty Welsh", key: "marty", text: "Yeah, that makes sense." },
-            { speaker: "Maury Ornest", key: "maury", text: "And I want to set Laura straight! She got to say everything from her point of view. What about my point of view? That’s what I liked about your book. You didn’t hold back." },
-            { speaker: "Dr. Marty Welsh", key: "marty", text: "I was lucky that way. I got to share. It saved me." },
-            { speaker: "Maury Ornest", key: "maury", text: "And my family is never honest! So, the truth never comes out. How can it come out? I want to let it out. I want to do something, for once, with what I have. So, it wasn’t all a waste." },
-            { speaker: "Dr. Marty Welsh", key: "marty", text: "Do something like what?" },
-            { speaker: "Maury Ornest", key: "maury", text: "I don’t want love to be wasted on me. I want to be able to feel loved." }
-          ]
-        },
-        {
-          label: "Option B (Shared Solitude): 'We both carried immense solitude...'",
-          dialogueText: "We both carried immense solitude in different ways. But if it felt so impossible down there... why did you bother coming to this holding room?",
-          progressDelta: 15,
-          vulnerabilityDelta: 20,
-          type: "calm",
-          tag: "🕊️ Shared Solitude",
-          unlocksMemory: "🤝 Jeremy Nobel Reading",
-          outroSequence: [
-            { speaker: "Maury Ornest", key: "maury", text: "(drops his head) I don’t know. I thought maybe… after watching the movie they made about me… That someone would care. Or I could help someone. I thought I could matter, finally." },
-            { speaker: "Dr. Marty Welsh", key: "marty", text: "Yeah, that makes sense." },
-            { speaker: "Maury Ornest", key: "maury", text: "And I want to set Laura straight! She got to say everything from her point of view. What about my point of view? That’s what I liked about your book. You didn’t hold back." },
-            { speaker: "Dr. Marty Welsh", key: "marty", text: "I was lucky that way. I got to share. It saved me." },
-            { speaker: "Maury Ornest", key: "maury", text: "And my family is never honest! So, the truth never comes out. How can it come out? I want to let it out. I want to do something, for once, with what I have. So, it wasn’t all a waste." },
-            { speaker: "Dr. Marty Welsh", key: "marty", text: "Do something like what?" },
-            { speaker: "Maury Ornest", key: "maury", text: "I don’t want love to be wasted on me. I want to be able to feel loved." }
-          ]
+          tag: "⚡ Guarded",
+          unlocksMemory: "🩺 Recognized Dr. Welsh"
         }
       ]
     },
     {
-      // CHOICE 3
-      speaker: "marty",
-      introSequence: [],
-      promptSpeaker: "marty",
-      headerText: "Choice 3: Comforting Maury's Vulnerability",
+      speakerKey: "marty",
+      speakerName: "Dr. Marty Welsh",
+      promptText: "Yes, ha-ha. I watched the movie about you. Do you have your journals here?",
+      headerText: "Step 2: Defending Your Private Journals",
       options: [
         {
-          label: "Option A (Physical Comfort): (pats Maury on the back) 'We all do.'",
-          dialogueText: "(pats Maury on the back) We all do.",
+          label: "Option A (Frustrated Boundary): 'Yes, but they’re not for anyone else to read. Laura messed that up. Those were my most private thoughts.'",
+          dialogueText: "Yes, but they’re not for anyone else to read. Laura messed that up. Those were my most private thoughts.",
+          progressDelta: 5,
+          type: "tense",
+          tag: "⚡ Boundaries",
+          unlocksMemory: "📖 Private Journals"
+        },
+        {
+          label: "Option B (Resentful Defense): 'Laura had no right to share them with the world. They were meant for me.'",
+          dialogueText: "Laura had no right to share them with the world. They were meant for me.",
+          progressDelta: 5,
+          type: "tense",
+          tag: "⚡ Resentment",
+          unlocksMemory: "📖 Private Journals"
+        }
+      ]
+    },
+    {
+      speakerKey: "marty",
+      speakerName: "Dr. Marty Welsh",
+      promptText: "Maybe you should consider going public with your thoughts.",
+      headerText: "Step 3: Pushing Back Against Dr. Welsh",
+      options: [
+        {
+          label: "Option A (Challenging Privilege): 'That’s easy for you to say, Mr. Successful Dr. Anonymous. You had a career. You had a wife who loved you and stayed with you. You’re not like me.'",
+          dialogueText: "That’s easy for you to say, Mr. Successful Dr. Anonymous. You had a successful career. You had a wife who loved you and stayed with you. You’re not like me.",
+          progressDelta: 5,
+          type: "tense",
+          tag: "⚡ Confrontational",
+          unlocksMemory: "⚡ Challenged Marty"
+        },
+        {
+          label: "Option B (Exposing Difference): 'You don't know what it's like to have your mind exposed while everyone abandons you.'",
+          dialogueText: "You don't know what it's like to have your mind exposed while everyone abandons you.",
+          progressDelta: 5,
+          type: "tense",
+          tag: "⚡ Raw Grief",
+          unlocksMemory: "⚡ Challenged Marty"
+        }
+      ]
+    },
+    {
+      speakerKey: "marty",
+      speakerName: "Dr. Marty Welsh",
+      promptText: "Yes, I did. And part of the way I did that was by not being lonely. Like Jeremy Nobel says.",
+      headerText: "Step 4: Questioning Jeremy Nobel's Advice",
+      options: [
+        {
+          label: "Option A (Focus on Broken Hand): 'What does he know? He had a sister with a disability, sure, but did he have any issues? Did he break his hand and end his chance at his career? He just kept succeeding.'",
+          dialogueText: "What does he know? He had a sister with a disability, sure, but did he have any issues? Did he break his hand and end his chance at his career? He just kept succeeding.",
+          progressDelta: 5,
+          type: "tense",
+          tag: "⚡ Hand Injury Trauma",
+          unlocksMemory: "🎨 Broken Hand Trauma"
+        },
+        {
+          label: "Option B (Focus on Easy Success): 'Success makes it easy to preach about connection. He didn't lose his entire livelihood.'",
+          dialogueText: "Success makes it easy to preach about connection. He didn't lose his entire livelihood.",
+          progressDelta: 5,
+          type: "tense",
+          tag: "⚡ Skeptical",
+          unlocksMemory: "🎨 Broken Hand Trauma"
+        }
+      ]
+    },
+    {
+      speakerKey: "marty",
+      speakerName: "Dr. Marty Welsh",
+      promptText: "Yeah, he did have some setbacks, and not as big as you or me.",
+      headerText: "Step 5: Calling Out Solitude",
+      options: [
+        {
+          label: "Option A (Citing Dr. Welsh's Book): 'Exactly! Easy for him to tell us not to be lonely. You even said in your book how you felt alone.'",
+          dialogueText: "Exactly! Easy for him to tell us not to be lonely. You even said in your book how you felt alone.",
+          progressDelta: 10,
+          type: "calm",
+          tag: "🕊️ Book Citation",
+          unlocksMemory: "🤝 Shared Solitude"
+        },
+        {
+          label: "Option B (Demanding Real Honesty): 'Even with all your supporters, you wrote about isolation. None of us escaped it.'",
+          dialogueText: "Even with all your supporters, you wrote about isolation. None of us escaped it.",
+          progressDelta: 10,
+          type: "calm",
+          tag: "🕊️ Universal Isolation",
+          unlocksMemory: "🤝 Shared Solitude"
+        }
+      ]
+    },
+    {
+      speakerKey: "marty",
+      speakerName: "Dr. Marty Welsh",
+      promptText: "Then why did you even bother coming here, Maury?",
+      headerText: "Step 6: Admitting the Desire to Matter",
+      options: [
+        {
+          label: "Option A (Admitting Vulnerability): '(drops head) I don’t know. I thought maybe… after watching the movie they made about me… That someone would care. Or I could help someone. I thought I could matter, finally.'",
+          dialogueText: "(drops head) I don’t know. I thought maybe… after watching the movie they made about me… That someone would care. Or I could help someone. I thought I could matter, finally.",
+          progressDelta: 10,
+          type: "calm",
+          tag: "🕊️ Deep Vulnerability",
+          unlocksMemory: "💔 Longing to Matter"
+        },
+        {
+          label: "Option B (Wanting Control of Perspective): 'I came to set Laura straight! She got to say everything from her point of view. What about my point of view?'",
+          dialogueText: "I came to set Laura straight! She got to say everything from her point of view. What about my point of view?",
+          progressDelta: 10,
+          type: "tense",
+          tag: "⚡ Narrative Control",
+          unlocksMemory: "💔 Longing to Matter"
+        }
+      ]
+    },
+    {
+      speakerKey: "marty",
+      speakerName: "Dr. Marty Welsh",
+      promptText: "Yeah, that makes sense. You want to let it out so it wasn't all a waste.",
+      headerText: "Step 7: Expressing the Need for Love",
+      options: [
+        {
+          label: "Option A (Unfiltered Heart): 'I don’t want love to be wasted on me. I want to be able to feel loved.'",
+          dialogueText: "I don’t want love to be wasted on me. I want to be able to feel loved.",
+          progressDelta: 10,
+          type: "calm",
+          tag: "🕊️ Feeling Loved",
+          unlocksMemory: "❤️ Unwasted Love"
+        },
+        {
+          label: "Option B (Fear of Wasted Potential): 'I just want what I lived through to mean something to someone down there.'",
+          dialogueText: "I just want what I lived through to mean something to someone down there.",
+          progressDelta: 10,
+          type: "calm",
+          tag: "🕊️ Meaningful Trauma",
+          unlocksMemory: "❤️ Unwasted Love"
+        }
+      ]
+    },
+    {
+      speakerKey: "marty",
+      speakerName: "Dr. Marty Welsh",
+      promptText: "(pats Maury on the back) We all do.",
+      headerText: "Step 8: Reacting to Physical Touch",
+      options: [
+        {
+          label: "Option A (Defensive Physical Reflex): '(springs up, ready to fight) Don’t you touch me! I’ll punch you.'",
+          dialogueText: "(springs up, ready to fight) Don’t you touch me! I’ll punch you.",
           progressDelta: -5,
-          vulnerabilityDelta: -10,
           type: "tense",
-          tag: "⚡ Physical Comfort",
-          unlocksMemory: "🌧️ Vulnerable Reflex",
-          outroSequence: [
-            { speaker: "Maury Ornest", key: "maury", text: "(springs up, ready to fight) Don’t you touch me! I’ll punch you." },
-            { speaker: "Dr. Marty Welsh", key: "marty", text: "I was just trying to comfort you." },
-            { speaker: "Maury Ornest", key: "maury", text: "Comfort me like in Plan 75? Where they kill the old people off?" },
-            { speaker: "Dr. Marty Welsh", key: "marty", text: "Maury…" },
-            { speaker: "Maury Ornest", key: "maury", text: "I bet your wife would have loved to send you to something like Plan 75. I bet she was sick of taking care of you and thought you were just taking up space and resources like those old people in Japan. You couldn’t even work. You were more useless than Michi." }
-          ]
+          tag: "⚡ Defensive Touch",
+          unlocksMemory: "🥊 Physical Defense"
         },
         {
-          label: "Option B (Verbal Comfort): 'We all crave that, Maury...'",
-          dialogueText: "We all crave that, Maury. None of us want our capacity for love to be wasted.",
+          label: "Option B (Verbal Boundary Pushback): 'Don't touch me! Comfort me like in Plan 75 where they kill the old people off?'",
+          dialogueText: "Don't touch me! Comfort me like in Plan 75 where they kill the old people off?",
+          progressDelta: -5,
+          type: "tense",
+          tag: "⚡ Plan 75 Provocation",
+          unlocksMemory: "🥊 Physical Defense"
+        }
+      ]
+    },
+    {
+      speakerKey: "marty",
+      speakerName: "Dr. Marty Welsh",
+      promptText: "I was just trying to comfort you, Maury.",
+      headerText: "Step 9: Attacking Systemic Euthanasia (Plan 75)",
+      options: [
+        {
+          label: "Option A (Harsh Accusation): 'I bet your wife would have loved to send you to something like Plan 75. I bet she was sick of taking care of you and thought you were just taking up space.'",
+          dialogueText: "I bet your wife would have loved to send you to something like Plan 75. I bet she was sick of taking care of you and thought you were just taking up space.",
           progressDelta: 5,
-          vulnerabilityDelta: 5,
-          type: "calm",
-          tag: "🕊️ Verbal Comfort",
-          unlocksMemory: "🌧️ Vulnerable Reflex",
-          outroSequence: [
-            { speaker: "Maury Ornest", key: "maury", text: "(springs up, ready to fight) Don't talk to me like you're my therapist! Comfort me? I don't need your comfort!" },
-            { speaker: "Maury Ornest", key: "maury", text: "Comfort me like in Plan 75? Where they kill the old people off?" },
-            { speaker: "Dr. Marty Welsh", key: "marty", text: "Maury…" },
-            { speaker: "Maury Ornest", key: "maury", text: "I bet your wife would have loved to send you to something like Plan 75. I bet she was sick of taking care of you and thought you were just taking up space and resources like those old people in Japan. You couldn’t even work. You were more useless than Michi." }
-          ]
-        }
-      ]
-    },
-    {
-      // CHOICE 4
-      speaker: "marty",
-      introSequence: [],
-      promptSpeaker: "marty",
-      headerText: "Choice 4: Handling the Accusation & Plan 75",
-      options: [
-        {
-          label: "Option A (Silent Grace): (looks away and says nothing)",
-          dialogueText: "(looks away and says nothing)",
-          progressDelta: 10,
-          vulnerabilityDelta: 10,
-          type: "calm",
-          tag: "🕊️ Silent Grace",
-          unlocksMemory: "📜 Plan 75 Reference",
-          outroSequence: [
-            { speaker: "Maury Ornest", key: "maury", text: "(sits down again, tired) I’m sorry. I wish I could have had a death like that. Comfortable. With someone. Not alone." },
-            { speaker: "Dr. Marty Welsh", key: "marty", text: "I forgive you, Maury. She probably did want that for me. Or for herself. I was a big burden at the end. I do wish something like Plan 75 was around for me." },
-            { speaker: "Maury Ornest", key: "maury", text: "Would you do it?" },
-            { speaker: "Dr. Marty Welsh", key: "marty", text: "I think so. Maybe that’s what I’ll focus on when I go back to Earth. A humane ending for humans. I didn’t want to be a burden. I would have welcomed an easier ending. We don’t get to choose how we’re born. But it might have been nice to choose how we died. To get to say goodbye. I got that, at least." },
-            { speaker: "Maury Ornest", key: "maury", text: "I didn’t even get that." },
-            { speaker: "Dr. Marty Welsh", key: "marty", text: "Was there anything you feel good about in your life?" },
-            { speaker: "Maury Ornest", key: "maury", text: "I was handsome." },
-            { speaker: "Dr. Marty Welsh", key: "marty", text: "(laughs) Well, you certainly have that over me, Maury." },
-            { speaker: "Maury Ornest", key: "maury", text: "I made good art apparently. Did you make art?" },
-            { speaker: "Dr. Marty Welsh", key: "marty", text: "Not really. We’re pretty different in that way." },
-            { speaker: "Maury Ornest", key: "maury", text: "Do you want to try?" },
-            { speaker: "Dr. Marty Welsh", key: "marty", text: "(laughs) Okay, sure." },
-            { speaker: "Dr. Marty Welsh", key: "marty", text: "(Dr. Welsh rolls over to the canvas. Maury joins him.)" },
-            { speaker: "Dr. Marty Welsh", key: "marty", text: "I was average looking, but I had a good family supporting me." },
-            { speaker: "Maury Ornest", key: "maury", text: "I miss my father." },
-            { speaker: "Dr. Marty Welsh", key: "marty", text: "What was he like?" },
-            { speaker: "Maury Ornest", key: "maury", text: "He was strict and ambitious. He had high hopes for me. He wanted more for me. I think, in the end, I let him down." },
-            { speaker: "Dr. Marty Welsh", key: "marty", text: "Is that why you want to go back?" },
-            { speaker: "Maury Ornest", key: "maury", text: "Yeah. I feel like, if I had another chance, I would do it differently this time. And he would know. Well, his soul would know." },
-            { speaker: "Dr. Marty Welsh", key: "marty", text: "That seems important. In Dr. Nobel’s book, they talk about that. About belonging and purpose. Feeling like you mattered down there, to someone, to something. What would you do differently this time?" },
-            { speaker: "Maury Ornest", key: "maury", text: "I’d make sure not to chase success so much but to chase connection and friendships. So many of the books and movies talked about that. But I don’t know how to make friends. I feel like their love is wasted on me." },
-            { speaker: "Dr. Marty Welsh", key: "marty", text: "Yes, making friends can be hard. My caregivers became my friends. But it would be nice to have someone who understood things better. Understood what I’ve gone through." },
-            { speaker: "Maury Ornest", key: "maury", text: "Yeah. It sucks down there, on Earth." }
-          ]
-        },
-        {
-          label: "Option B (Direct Confrontation): 'That's a heavy thing to say...'",
-          dialogueText: "That's a heavy thing to say... being a burden was my greatest fear. I forgive you, Maury, because I know that comes from your own fear of dying alone.",
-          progressDelta: 10,
-          vulnerabilityDelta: 15,
           type: "tense",
-          tag: "⚡ Direct Confrontation",
-          unlocksMemory: "📜 Plan 75 Reference",
-          outroSequence: [
-            { speaker: "Maury Ornest", key: "maury", text: "(sits down again, tired) I’m sorry. I wish I could have had a death like that. Comfortable. With someone. Not alone." },
-            { speaker: "Dr. Marty Welsh", key: "marty", text: "I forgive you, Maury. She probably did want that for me. Or for herself. I was a big burden at the end. I do wish something like Plan 75 was around for me." },
-            { speaker: "Maury Ornest", key: "maury", text: "Would you do it?" },
-            { speaker: "Dr. Marty Welsh", key: "marty", text: "I think so. Maybe that’s what I’ll focus on when I go back to Earth. A humane ending for humans. I didn’t want to be a burden. I would have welcomed an easier ending. We don’t get to choose how we’re born. But it might have been nice to choose how we died. To get to say goodbye. I got that, at least." },
-            { speaker: "Maury Ornest", key: "maury", text: "I didn’t even get that." },
-            { speaker: "Dr. Marty Welsh", key: "marty", text: "Was there anything you feel good about in your life?" },
-            { speaker: "Maury Ornest", key: "maury", text: "I was handsome." },
-            { speaker: "Dr. Marty Welsh", key: "marty", text: "(laughs) Well, you certainly have that over me, Maury." },
-            { speaker: "Maury Ornest", key: "maury", text: "I made good art apparently. Did you make art?" },
-            { speaker: "Dr. Marty Welsh", key: "marty", text: "Not really. We’re pretty different in that way." },
-            { speaker: "Maury Ornest", key: "maury", text: "Do you want to try?" },
-            { speaker: "Dr. Marty Welsh", key: "marty", text: "(laughs) Okay, sure." },
-            { speaker: "Dr. Marty Welsh", key: "marty", text: "(Dr. Welsh rolls over to the canvas. Maury joins him.)" },
-            { speaker: "Dr. Marty Welsh", key: "marty", text: "I was average looking, but I had a good family supporting me." },
-            { speaker: "Maury Ornest", key: "maury", text: "I miss my father." },
-            { speaker: "Dr. Marty Welsh", key: "marty", text: "What was he like?" },
-            { speaker: "Maury Ornest", key: "maury", text: "He was strict and ambitious. He had high hopes for me. He wanted more for me. I think, in the end, I let him down." },
-            { speaker: "Dr. Marty Welsh", key: "marty", text: "Is that why you want to go back?" },
-            { speaker: "Maury Ornest", key: "maury", text: "Yeah. I feel like, if I had another chance, I would do it differently this time. And he would know. Well, his soul would know." },
-            { speaker: "Dr. Marty Welsh", key: "marty", text: "That seems important. In Dr. Nobel’s book, they talk about that. About belonging and purpose. Feeling like you mattered down there, to someone, to something. What would you do differently this time?" },
-            { speaker: "Maury Ornest", key: "maury", text: "I’d make sure not to chase success so much but to chase connection and friendships. So many of the books and movies talked about that. But I don’t know how to make friends. I feel like their love is wasted on me." },
-            { speaker: "Dr. Marty Welsh", key: "marty", text: "Yes, making friends can be hard. My caregivers became my friends. But it would be nice to have someone who understood things better. Understood what I’ve gone through." },
-            { speaker: "Maury Ornest", key: "maury", text: "Yeah. It sucks down there, on Earth." }
-          ]
-        }
-      ]
-    },
-    {
-      // CHOICE 5
-      speaker: "marty",
-      introSequence: [],
-      promptSpeaker: "marty",
-      headerText: "Choice 5: Framing the Climate Crisis",
-      options: [
-        {
-          label: "Option A (Macro Disaster Perspective): 'Yeah, and you know Earth is getting more dangerous...'",
-          dialogueText: "Yeah, and you know that Earth is getting more dangerous too, right? There are more climate issues and catastrophes now.",
-          progressDelta: 10,
-          vulnerabilityDelta: 5,
-          type: "tense",
-          tag: "⚡ Macro Perspective",
-          unlocksMemory: "🌍 Earth Catastrophe",
-          outroSequence: [
-            { speaker: "Maury Ornest", key: "maury", text: "Yeah, but my family was Jewish. We can handle that. And there were different writers who also talked about how people came together more in a climate emergency. In our family, no one talked about what was happening. So, there was no community. Like Laura said. No community. It was hidden." },
-            { speaker: "Dr. Marty Welsh", key: "marty", text: "Do you mean that, at least in a climate emergency, you can be public about your grief, about what you’re going through?" },
-            { speaker: "Maury Ornest", key: "maury", text: "Yeah, like, it’s not your fault. But also, I don’t know how much I believe all that stuff either. About the climate getting worse." },
-            { speaker: "Dr. Marty Welsh", key: "marty", text: "Like the fires too that your family went through later. Do you remember how Akhter-Khan said that if you feel lonely earlier in life, you tend to have less trust in people and the government? And you tend to think that there’s no point in trying?" },
-            { speaker: "Maury Ornest", key: "maury", text: "Yeah, like those. No one thought people were inferior because there were fires. It was just seen as what happened. Just chance. No one thought that it was deserved. Or that you were a failure. They have more empathy. Even if they’re scared." },
-            { speaker: "Dr. Marty Welsh", key: "marty", text: "Like they didn’t have empathy for you?" },
-            { speaker: "Maury Ornest", key: "maury", text: "You heard Laura say it. She said it was hard to have compassion. She said she thought I might be better off dead." },
-            { speaker: "Dr. Marty Welsh", key: "marty", text: "I felt that way for a long time. That’s why I’m not sure about going back down to Earth. From all the pieces we read, it looks to me like we’re signing up for more grief down there. Like there are going to be more disasters. More scary things. More chaos." },
-            { speaker: "Maury Ornest", key: "maury", text: "Yeah, I didn’t like Laura giving my paintings to people in the Los Angeles fires. And I don’t really know if I believe in all this stuff, they’re saying about the climate. People are bad anyway. They’re annoying and they’re hurtful and they’re not honest." },
-            { speaker: "Dr. Marty Welsh", key: "marty", text: "You didn’t like that she gave the paintings away?" },
-            { speaker: "Maury Ornest", key: "maury", text: "No. And I know that thing… climate grief… and precarity and all those things. I know they’re real. I know that art makes people feel better. It made me feel better. But these were my paintings. And she just gave them away. Because someone’s house was burned. It doesn’t seem fair." },
-            { speaker: "Dr. Marty Welsh", key: "marty", text: "Yeah, that makes sense. I do worry about the climate disasters, like what they talked about in Bhopal. I don’t want to become disabled again or even worse, if I lose my family in a natural disaster. I don’t want to be so helpless again and I don’t want to be so lonely again – if something happens to them. I don’t want to be in a world that’s falling apart so much. I also don’t want a body that’s falling apart so much." },
-            { speaker: "Maury Ornest", key: "maury", text: "(looks at what Dr. Welsh is painting) Is that Earth?" },
-            { speaker: "Dr. Marty Welsh", key: "marty", text: "(laughs) I suppose so. I guess it’s the shit show that I’m imagining is down there if I was going to go back. I really don’t want to become disabled again. Not in the middle of all this catastrophe. I don’t want to lose the ability to walk again. I don’t know how I’ll have a good quality of life." },
-            { speaker: "Maury Ornest", key: "maury", text: "Yeah, but you were just physically disabled." },
-            { speaker: "Dr. Marty Welsh", key: "marty", text: "Do you think it’s not as bad? Do you think that being physically disabled is better than being mentally disabled?" },
-            { speaker: "Maury Ornest", key: "maury", text: "Yeah." },
-            { speaker: "Dr. Marty Welsh", key: "marty", text: "What if you were down there and couldn’t paint, Maury?" },
-            { speaker: "Maury Ornest", key: "maury", text: "(doesn’t say anything, looks to the side, slightly ashamed and deep in thought)" }
-          ]
+          tag: "⚡ Burden Accusation",
+          unlocksMemory: "📜 Plan 75 Accusation"
         },
         {
-          label: "Option B (Micro Personal Perspective): 'It does... returning means facing a shifting world...'",
-          dialogueText: "It does... and returning means facing a world where even the ground under us is shifting. Climate issues are making everything more precarious.",
-          progressDelta: 10,
-          vulnerabilityDelta: 10,
-          type: "calm",
-          tag: "🕊️ Micro Perspective",
-          unlocksMemory: "🌍 Earth Catastrophe",
-          outroSequence: [
-            { speaker: "Maury Ornest", key: "maury", text: "Yeah, but my family was Jewish. We can handle that. And there were different writers who also talked about how people came together more in a climate emergency. In our family, no one talked about what was happening. So, there was no community. Like Laura said. No community. It was hidden." },
-            { speaker: "Dr. Marty Welsh", key: "marty", text: "Do you mean that, at least in a climate emergency, you can be public about your grief, about what you’re going through?" },
-            { speaker: "Maury Ornest", key: "maury", text: "Yeah, like, it’s not your fault. But also, I don’t know how much I believe all that stuff either. About the climate getting worse." },
-            { speaker: "Dr. Marty Welsh", key: "marty", text: "Like the fires too that your family went through later. Do you remember how Akhter-Khan said that if you feel lonely earlier in life, you tend to have less trust in people and the government? And you tend to think that there’s no point in trying?" },
-            { speaker: "Maury Ornest", key: "maury", text: "Yeah, like those. No one thought people were inferior because there were fires. It was just seen as what happened. Just chance. No one thought that it was deserved. Or that you were a failure. They have more empathy. Even if they’re scared." },
-            { speaker: "Dr. Marty Welsh", key: "marty", text: "Like they didn’t have empathy for you?" },
-            { speaker: "Maury Ornest", key: "maury", text: "You heard Laura say it. She said it was hard to have compassion. She said she thought I might be better off dead." },
-            { speaker: "Dr. Marty Welsh", key: "marty", text: "I felt that way for a long time. That’s why I’m not sure about going back down to Earth. From all the pieces we read, it looks to me like we’re signing up for more grief down there. Like there are going to be more disasters. More scary things. More chaos." },
-            { speaker: "Maury Ornest", key: "maury", text: "Yeah, I didn’t like Laura giving my paintings to people in the Los Angeles fires. And I don’t really know if I believe in all this stuff, they’re saying about the climate. People are bad anyway. They’re annoying and they’re hurtful and they’re not honest." },
-            { speaker: "Dr. Marty Welsh", key: "marty", text: "You didn’t like that she gave the paintings away?" },
-            { speaker: "Maury Ornest", key: "maury", text: "No. And I know that thing… climate grief… and precarity and all those things. I know they’re real. I know that art makes people feel better. It made me feel better. But these were my paintings. And she just gave them away. Because someone’s house was burned. It doesn’t seem fair." },
-            { speaker: "Dr. Marty Welsh", key: "marty", text: "Yeah, that makes sense. I do worry about the climate disasters, like what they talked about in Bhopal. I don’t want to become disabled again or even worse, if I lose my family in a natural disaster. I don’t want to be so helpless again and I don’t want to be so lonely again – if something happens to them. I don’t want to be in a world that’s falling apart so much. I also don’t want a body that’s falling apart so much." },
-            { speaker: "Maury Ornest", key: "maury", text: "(looks at what Dr. Welsh is painting) Is that Earth?" },
-            { speaker: "Dr. Marty Welsh", key: "marty", text: "(laughs) I suppose so. I guess it’s the shit show that I’m imagining is down there if I was going to go back. I really don’t want to become disabled again. Not in the middle of all this catastrophe. I don’t want to lose the ability to walk again. I don’t know how I’ll have a good quality of life." },
-            { speaker: "Maury Ornest", key: "maury", text: "Yeah, but you were just physically disabled." },
-            { speaker: "Dr. Marty Welsh", key: "marty", text: "Do you think it’s not as bad? Do you think that being physically disabled is better than being mentally disabled?" },
-            { speaker: "Maury Ornest", key: "maury", text: "Yeah." },
-            { speaker: "Dr. Marty Welsh", key: "marty", text: "What if you were down there and couldn’t paint, Maury?" },
-            { speaker: "Maury Ornest", key: "maury", text: "(doesn’t say anything, looks to the side, slightly ashamed and deep in thought)" }
-          ]
-        }
-      ]
-    },
-    {
-      // CHOICE 6
-      speaker: "marty",
-      introSequence: [],
-      promptSpeaker: "marty",
-      headerText: "Choice 6: Addressing Disability Comparisons",
-      options: [
-        {
-          label: "Option A (Dismantle Comparison): 'I know they didn't have compassion...'",
-          dialogueText: "I know they didn’t have a lot of compassion for you. But you don’t have to be like that. You can have compassion for others. What happened to you can be bad. And what happened to me can be bad too. It doesn’t have to take away from your experience.",
-          progressDelta: 10,
-          vulnerabilityDelta: 10,
-          type: "calm",
-          tag: "🕊️ Dismantle Comparison",
-          unlocksMemory: "🧠 Solastalgia Reading",
-          outroSequence: [
-            { speaker: "Maury Ornest", key: "maury", text: "But then there’s so much bad. It’s just adding on top of adding. If I compare them, then it’s easier to manage the badness. If it’s just all true… then it’s a lot." },
-            { speaker: "Dr. Marty Welsh", key: "marty", text: "Yes, it can be a lot if you see your experience and mine as valid as well. Dr. Nobel talks about that too. Instead of feeling alone in your suffering, understanding that others are also suffering and connecting with them helps. It helps everyone." },
-            { speaker: "Maury Ornest", key: "maury", text: "Yeah. Exactly. And with the climate stuff… everyone knows we’re all dealing with it. My Schizoaffective disorder was hidden. It was kept a secret. But with all the climate disasters, maybe there will be more empathy because people can imagine that happening to them. Maybe that’ll change how people think about things. Maybe it’ll make us more connected, somehow." },
-            { speaker: "Dr. Marty Welsh", key: "marty", text: "I know that Akhter-Khan also talked about how “by 2060, climate-related global emigration flows are projected to increase to around 110-163 million.” I guess a lot of people will be relocating because they’ll have less water, or housing, or the temperatures are going to really bad down there. Or flooding. That’s been happening a lot too. People are having to move to more inhabitable places where they can actually live." },
-            { speaker: "Maury Ornest", key: "maury", text: "So, there may not even be a Los Angeles by then. Everyone may just leave. There is less water. I think 30% of the planet is experiencing drought at any given time, right? And it used to be 20% in 2020?" },
-            { speaker: "Dr. Marty Welsh", key: "marty", text: "Yeah. That’s possible. And that can make people lonelier too. I think it had a term in her reading that we did. But I can’t remember it now." },
-            { speaker: "Maury Ornest", key: "maury", text: "A term? For losing your home and having to relocate?" },
-            { speaker: "Dr. Marty Welsh", key: "marty", text: "Oh yeah, it was solastalgia. She said that it can cause “the loss of social cohesion and sense of identity” kind of like when you were describing the baseball field and not getting to go there anymore. The land matters a lot to everyone." },
-            { speaker: "Maury Ornest", key: "maury", text: "I loved being out on the baseball field." },
-            { speaker: "Dr. Marty Welsh", key: "marty", text: "Yeah, nature is beautiful. That’s such a beautiful thing about Earth. When I look at the painting like this, when I see Earth like this, and see how small people are, it’s almost like the people are Earth." },
-            { speaker: "Maury Ornest", key: "maury", text: "We Are Earth." },
-            { speaker: "Dr. Marty Welsh", key: "marty", text: "Yeah. Exactly. And we can have compassion for each other. You can have something bad happen and so can someone else." },
-            { speaker: "Maury Ornest", key: "maury", text: "It’s just painful to look at. I don’t want to see it. That’s why I made my paintings so vibrant. Like that lady said in the movie, remember? She said, “it feels so free and light and happy and joyful. I bought this because the colors are magnificent.”" },
-            { speaker: "Dr. Marty Welsh", key: "marty", text: "That’s a big compliment." },
-            { speaker: "Maury Ornest", key: "maury", text: "It is. Magnificent. Wow. But I still feel resentful. I still feel grief. Like I was robbed. I wanted a wife. I wanted love. I resent that I got this illness. Schizoaffective. I resent that. I hate that. I resent that others didn’t have to deal with it. I was alone. Dealing with it alone. They liked my paintings, but would they like me? No. They avoided me. I hate them for that. I’m angry about that. I resent that." }
-          ]
-        },
-        {
-          label: "Option B (Invoke Universal Suffering): 'Comparing suffering keeps us separated...'",
-          dialogueText: "Comparing suffering keeps us separated, Maury. What happened to you was agonizing, and what happened to me was agonizing. Recognizing both as real is how we find connection instead of isolation.",
-          progressDelta: 10,
-          vulnerabilityDelta: 15,
-          type: "calm",
-          tag: "🕊️ Invoke Universal Suffering",
-          unlocksMemory: "🧠 Solastalgia Reading",
-          outroSequence: [
-            { speaker: "Maury Ornest", key: "maury", text: "But then there’s so much bad. It’s just adding on top of adding. If I compare them, then it’s easier to manage the badness. If it’s just all true… then it’s a lot." },
-            { speaker: "Dr. Marty Welsh", key: "marty", text: "Yes, it can be a lot if you see your experience and mine as valid as well. Dr. Nobel talks about that too. Instead of feeling alone in your suffering, understanding that others are also suffering and connecting with them helps. It helps everyone." },
-            { speaker: "Maury Ornest", key: "maury", text: "Yeah. Exactly. And with the climate stuff… everyone knows we’re all dealing with it. My Schizoaffective disorder was hidden. It was kept a secret. But with all the climate disasters, maybe there will be more empathy because people can imagine that happening to them. Maybe that’ll change how people think about things. Maybe it’ll make us more connected, somehow." },
-            { speaker: "Dr. Marty Welsh", key: "marty", text: "I know that Akhter-Khan also talked about how “by 2060, climate-related global emigration flows are projected to increase to around 110-163 million.” I guess a lot of people will be relocating because they’ll have less water, or housing, or the temperatures are going to really bad down there. Or flooding. That’s been happening a lot too. People are having to move to more inhabitable places where they can actually live." },
-            { speaker: "Maury Ornest", key: "maury", text: "So, there may not even be a Los Angeles by then. Everyone may just leave. There is less water. I think 30% of the planet is experiencing drought at any given time, right? And it used to be 20% in 2020?" },
-            { speaker: "Dr. Marty Welsh", key: "marty", text: "Yeah. That’s possible. And that can make people lonelier too. I think it had a term in her reading that we did. But I can’t remember it now." },
-            { speaker: "Maury Ornest", key: "maury", text: "A term? For losing your home and having to relocate?" },
-            { speaker: "Dr. Marty Welsh", key: "marty", text: "Oh yeah, it was solastalgia. She said that it can cause “the loss of social cohesion and sense of identity” kind of like when you were describing the baseball field and not getting to go there anymore. The land matters a lot to everyone." },
-            { speaker: "Maury Ornest", key: "maury", text: "I loved being out on the baseball field." },
-            { speaker: "Dr. Marty Welsh", key: "marty", text: "Yeah, nature is beautiful. That’s such a beautiful thing about Earth. When I look at the painting like this, when I see Earth like this, and see how small people are, it’s almost like the people are Earth." },
-            { speaker: "Maury Ornest", key: "maury", text: "We Are Earth." },
-            { speaker: "Dr. Marty Welsh", key: "marty", text: "Yeah. Exactly. And we can have compassion for each other. You can have something bad happen and so can someone else." },
-            { speaker: "Maury Ornest", key: "maury", text: "It’s just painful to look at. I don’t want to see it. That’s why I made my paintings so vibrant. Like that lady said in the movie, remember? She said, “it feels so free and light and happy and joyful. I bought this because the colors are magnificent.”" },
-            { speaker: "Dr. Marty Welsh", key: "marty", text: "That’s a big compliment." },
-            { speaker: "Maury Ornest", key: "maury", text: "It is. Magnificent. Wow. But I still feel resentful. I still feel grief. Like I was robbed. I wanted a wife. I wanted love. I resent that I got this illness. Schizoaffective. I resent that. I hate that. I resent that others didn’t have to deal with it. I was alone. Dealing with it alone. They liked my paintings, but would they like me? No. They avoided me. I hate them for that. I’m angry about that. I resent that." }
-          ]
-        }
-      ]
-    },
-    {
-      // CHOICE 7
-      speaker: "marty",
-      introSequence: [],
-      promptSpeaker: "marty",
-      headerText: "Choice 7: Responding to Resentment Toward Doctors",
-      options: [
-        {
-          label: "Option A (Personal Gratitude): 'I tried not to become very resentful...'",
-          dialogueText: "I tried not to become very resentful when I was dying. I tried to make sure I had compassion and kept myself level. Because I’d seen so many patients go through what they were going through. I knew how bad it could get. And that I had it better in some ways.",
+          label: "Option B (Fear of Helplessness): 'You couldn't even work at the end. Down there, society treats useless bodies like disposable resources.'",
+          dialogueText: "You couldn't even work at the end. Down there, society treats useless bodies like disposable resources.",
           progressDelta: 5,
-          vulnerabilityDelta: 5,
-          type: "calm",
-          tag: "🕊️ Personal Gratitude",
-          unlocksMemory: "🩺 Medical Ethics Case",
-          outroSequence: [
-            { speaker: "Maury Ornest", key: "maury", text: "So, you thought you were better than them. You’re not better than your patients." },
-            { speaker: "Dr. Marty Welsh", key: "marty", text: "Maury…" },
-            { speaker: "Maury Ornest", key: "maury", text: "What? It’s exactly things like this that make us patients hate you guys. Dr. Nobel talks about it. And that other written piece talked about it too. The COVID one. Remember? That guy – Corl – “he and the nurse unplugged the patient from the monitor, wheeled the stretcher down the hall, and pushed it out of the hospital.” And he felt the cold that he was sending the patient into – and that didn’t stop him. He didn’t care. And then they called the police to come pick her up. That’s it. That’s what you guys do." },
-            { speaker: "Dr. Marty Welsh", key: "marty", text: "I was trying to say that I had a zoomed-out perspective. I had seen more than the average human. And that’s what that piece was saying. Those doctors had seen a lot. Do you remember that? And do you remember those doctors were part of direct-care models? Remember why? “To offer them more personalized out-of-network care, without having to answer to administrators or insurers.” And remember she was able to help the man and “he thanked her profusely, in a way that made it clear he was not accustomed to such treatment” because she spent an hour with him. So, I try to remember things like this. I try to remember that I had knowledge people don’t have down there. I’ve seen things. And I was able to use that to ground myself more through the end. To cope. I had more gratitude because of my experiences with patients." },
-            { speaker: "Maury Ornest", key: "maury", text: "Gratitude for what?" },
-            { speaker: "Dr. Marty Welsh", key: "marty", text: "Well, I had enough funds not to destroy my family, for one." },
-            { speaker: "Maury Ornest", key: "maury", text: "I didn’t even have a family." },
-            { speaker: "Dr. Marty Welsh", key: "marty", text: "Yes, that’s true, but there are people on Earth who get ALS and don’t have any resources to fall back on. They can’t get caregivers." },
-            { speaker: "Maury Ornest", key: "maury", text: "I didn’t like my caregivers. They were nosey and controlling." },
-            { speaker: "Dr. Marty Welsh", key: "marty", text: "Yes, they can be." },
-            { speaker: "Maury Ornest", key: "maury", text: "You seem okay with everything. Aren’t you angry?" },
-            { speaker: "Dr. Marty Welsh", key: "marty", text: "Yes, sometimes I’m angry. It’s like I said in my book, I chose not to go the anger route. That much. But I do worry that if I go back down there, I’ll have to deal with more anger. Because of what’s happening to the planet. Akhter-Khan also said that. She said that “Climate-related violence and intergroup conflict are expected to rise” and that even an “18F increase in short-term mean temperature exposure is associated with a 9% increase in the risk of violent crime.”" },
-            { speaker: "Maury Ornest", key: "maury", text: "I’m not worried about violence. I can handle it." },
-            { speaker: "Dr. Marty Welsh", key: "marty", text: "You’re not? I guess you did punch your brother." },
-            { speaker: "Maury Ornest", key: "maury", text: "Why do you have to bring that up?" },
-            { speaker: "Dr. Marty Welsh", key: "marty", text: "You did though. And other people too…" },
-            { speaker: "Maury Ornest", key: "maury", text: "She destroyed my art." },
-            { speaker: "Dr. Marty Welsh", key: "marty", text: "Yeah… do you remember what Dr. Nobel said in the book about art?" },
-            { speaker: "Maury Ornest", key: "maury", text: "He said a lot of things about art…" },
-            { speaker: "Dr. Marty Welsh", key: "marty", text: "“Art is a medicine that requires no prescription.”" },
-            { speaker: "Maury Ornest", key: "maury", text: "Well, yeah." },
-            { speaker: "Dr. Marty Welsh", key: "marty", text: "But do you know why he said that?" },
-            { speaker: "Maury Ornest", key: "maury", text: "Okay – you’re trying to make a point. Can you just make it?" }
-          ]
-        },
-        {
-          label: "Option B (Systemic Validation): 'Your anger is completely justified, Maury...'",
-          dialogueText: "Your anger is completely justified, Maury. The system failed you and isolated you... I only managed to keep my own resentment down because being a doctor showed me how broken the medical world can be.",
-          progressDelta: 10,
-          vulnerabilityDelta: 15,
           type: "tense",
-          tag: "⚡ Systemic Validation",
-          unlocksMemory: "🩺 Medical Ethics Case",
-          outroSequence: [
-            { speaker: "Maury Ornest", key: "maury", text: "Broken? It's worse than broken! You guys look down on patients!" },
-            { speaker: "Maury Ornest", key: "maury", text: "What? It’s exactly things like this that make us patients hate you guys. Dr. Nobel talks about it. And that other written piece talked about it too. The COVID one. Remember? That guy – Corl – “he and the nurse unplugged the patient from the monitor, wheeled the stretcher down the hall, and pushed it out of the hospital.” And he felt the cold that he was sending the patient into – and that didn’t stop him. He didn’t care. And then they called the police to come pick her up. That’s it. That’s what you guys do." },
-            { speaker: "Dr. Marty Welsh", key: "marty", text: "I was trying to say that I had a zoomed-out perspective. I had seen more than the average human. And that’s what that piece was saying. Those doctors had seen a lot. Do you remember that? And do you remember those doctors were part of direct-care models? Remember why? “To offer them more personalized out-of-network care, without having to answer to administrators or insurers.” And remember she was able to help the man and “he thanked her profusely, in a way that made it clear he was not accustomed to such treatment” because she spent an hour with him. So, I try to remember things like this. I try to remember that I had knowledge people don’t have down there. I’ve seen things. And I was able to use that to ground myself more through the end. To cope. I had more gratitude because of my experiences with patients." },
-            { speaker: "Maury Ornest", key: "maury", text: "Gratitude for what?" },
-            { speaker: "Dr. Marty Welsh", key: "marty", text: "Well, I had enough funds not to destroy my family, for one." },
-            { speaker: "Maury Ornest", key: "maury", text: "I didn’t even have a family." },
-            { speaker: "Dr. Marty Welsh", key: "marty", text: "Yes, that’s true, but there are people on Earth who get ALS and don’t have any resources to fall back on. They can’t get caregivers." },
-            { speaker: "Maury Ornest", key: "maury", text: "I didn’t like my caregivers. They were nosey and controlling." },
-            { speaker: "Dr. Marty Welsh", key: "marty", text: "Yes, they can be." },
-            { speaker: "Maury Ornest", key: "maury", text: "You seem okay with everything. Aren’t you angry?" },
-            { speaker: "Dr. Marty Welsh", key: "marty", text: "Yes, sometimes I’m angry. It’s like I said in my book, I chose not to go the anger route. That much. But I do worry that if I go back down there, I’ll have to deal with more anger. Because of what’s happening to the planet. Akhter-Khan also said that. She said that “Climate-related violence and intergroup conflict are expected to rise” and that even an “18F increase in short-term mean temperature exposure is associated with a 9% increase in the risk of violent crime.”" },
-            { speaker: "Maury Ornest", key: "maury", text: "I’m not worried about violence. I can handle it." },
-            { speaker: "Dr. Marty Welsh", key: "marty", text: "You’re not? I guess you did punch your brother." },
-            { speaker: "Maury Ornest", key: "maury", text: "Why do you have to bring that up?" },
-            { speaker: "Dr. Marty Welsh", key: "marty", text: "You did though. And other people too…" },
-            { speaker: "Maury Ornest", key: "maury", text: "She destroyed my art." },
-            { speaker: "Dr. Marty Welsh", key: "marty", text: "Yeah… do you remember what Dr. Nobel said in the book about art?" },
-            { speaker: "Maury Ornest", key: "maury", text: "He said a lot of things about art…" },
-            { speaker: "Dr. Marty Welsh", key: "marty", text: "“Art is a medicine that requires no prescription.”" },
-            { speaker: "Maury Ornest", key: "maury", text: "Well, yeah." },
-            { speaker: "Dr. Marty Welsh", key: "marty", text: "But do you know why he said that?" },
-            { speaker: "Maury Ornest", key: "maury", text: "Okay – you’re trying to make a point. Can you just make it?" }
-          ]
+          tag: "⚡ Precarity Critique",
+          unlocksMemory: "📜 Plan 75 Accusation"
         }
       ]
     },
     {
-      // CHOICE 8
-      speaker: "marty",
-      introSequence: [],
-      promptSpeaker: "marty",
-      headerText: "Choice 8: Art as a Remedy for Loneliness",
+      speakerKey: "marty",
+      speakerName: "Dr. Marty Welsh",
+      promptText: "(looks away in silent forgiveness) She probably did want that for me or for herself. I was a big burden at the end.",
+      headerText: "Step 10: Apologizing & Admitting Fear of Dying Alone",
       options: [
         {
-          label: "Option A (Focus on Self-Healing): 'Dr. Nobel said art uses neural networks...'",
-          dialogueText: "Yeah, you’re right – I am. Dr. Nobel said, 'Art uses the same overlapping neural networks as social interaction which makes art a powerful antidote to chronic loneliness.'",
+          label: "Option A (Quiet Apology): '(sits down again, tired) I’m sorry. I wish I could have had a death like that. Comfortable. With someone. Not alone.'",
+          dialogueText: "(sits down again, tired) I’m sorry. I wish I could have had a death like that. Comfortable. With someone. Not alone.",
           progressDelta: 10,
-          vulnerabilityDelta: 10,
           type: "calm",
-          tag: "🕊️ Focus on Self-Healing",
-          unlocksMemory: "🎨 Flying Fish Alter Ego",
-          outroSequence: [
-            { speaker: "Maury Ornest", key: "maury", text: "So, what?" },
-            { speaker: "Dr. Marty Welsh", key: "marty", text: "So, making art and even looking at art can literally decrease your body’s experience of loneliness." },
-            { speaker: "Maury Ornest", key: "maury", text: "You mean my paintings were making me feel less lonely?" },
-            { speaker: "Dr. Marty Welsh", key: "marty", text: "Yup, and you even said that. Remember?" },
-            { speaker: "Maury Ornest", key: "maury", text: "Oh, yeah…" },
-            { speaker: "Dr. Marty Welsh", key: "marty", text: "“I'm more than beginning to believe that my flying fish drawings and paintings are an extension of myself, an alter ego in some ways.”" },
-            { speaker: "Maury Ornest", key: "maury", text: "So, I was just lonely?" },
-            { speaker: "Dr. Marty Welsh", key: "marty", text: "Not just… but yes, you were lonely." },
-            { speaker: "Maury Ornest", key: "maury", text: "Were you lonely?" },
-            { speaker: "Dr. Marty Welsh", key: "marty", text: "Sometimes. That’s why I wrote." },
-            { speaker: "Maury Ornest", key: "maury", text: "I wrote too." },
-            { speaker: "Dr. Marty Welsh", key: "marty", text: "Yeah. Dr. Thornber talks about it in the section we read. Remember?" },
-            { speaker: "Maury Ornest", key: "maury", text: "No." },
-            { speaker: "Dr. Marty Welsh", key: "marty", text: "She said that “social transformation is impossible without [shattered assumptions and changed consciousness].” Writing is how that happens. People like me and you – we write our stories down and it changes how people think and we need them to change how they think so that we can change how the world is run." },
-            { speaker: "Maury Ornest", key: "maury", text: "Do you really think writing can do that? No one reads anymore, I thought. Remember we saw that too – that it was decreasing 3% year by year for readers with a personal interest?" }
-          ]
+          tag: "🕊️ Exhausted Apology",
+          unlocksMemory: "🕊️ Fear of Solitary Death"
         },
         {
-          label: "Option B (Focus on Social Connection): 'Creating art stimulates brain networks...'",
-          dialogueText: "Dr. Nobel explains that creating art stimulates the same brain networks as rich social connection. It's a bridge when humans can't reach you directly.",
+          label: "Option B (Longing for Goodbyes): 'I just wished I could have said goodbye to someone who cared.'",
+          dialogueText: "I just wished I could have said goodbye to someone who cared.",
           progressDelta: 10,
-          vulnerabilityDelta: 10,
           type: "calm",
-          tag: "🕊️ Focus on Social Connection",
-          unlocksMemory: "🎨 Flying Fish Alter Ego",
-          outroSequence: [
-            { speaker: "Maury Ornest", key: "maury", text: "So, what?" },
-            { speaker: "Dr. Marty Welsh", key: "marty", text: "Looking at art or creating it literally rewires the nervous system away from isolation." },
-            { speaker: "Maury Ornest", key: "maury", text: "You mean my paintings were making me feel less lonely?" },
-            { speaker: "Dr. Marty Welsh", key: "marty", text: "Yup, and you even said that. Remember?" },
-            { speaker: "Maury Ornest", key: "maury", text: "Oh, yeah…" },
-            { speaker: "Dr. Marty Welsh", key: "marty", text: "“I'm more than beginning to believe that my flying fish drawings and paintings are an extension of myself, an alter ego in some ways.”" },
-            { speaker: "Maury Ornest", key: "maury", text: "So, I was just lonely?" },
-            { speaker: "Dr. Marty Welsh", key: "marty", text: "Not just… but yes, you were lonely." },
-            { speaker: "Maury Ornest", key: "maury", text: "Were you lonely?" },
-            { speaker: "Dr. Marty Welsh", key: "marty", text: "Sometimes. That’s why I wrote." },
-            { speaker: "Maury Ornest", key: "maury", text: "I wrote too." },
-            { speaker: "Dr. Marty Welsh", key: "marty", text: "Yeah. Dr. Thornber talks about it in the section we read. Remember?" },
-            { speaker: "Maury Ornest", key: "maury", text: "No." },
-            { speaker: "Dr. Marty Welsh", key: "marty", text: "She said that “social transformation is impossible without [shattered assumptions and changed consciousness].” Writing is how that happens. People like me and you – we write our stories down and it changes how people think and we need them to change how they think so that we can change how the world is run." },
-            { speaker: "Maury Ornest", key: "maury", text: "Do you really think writing can do that? No one reads anymore, I thought. Remember we saw that too – that it was decreasing 3% year by year for readers with a personal interest?" }
-          ]
+          tag: "🕊️ Farewell Longing",
+          unlocksMemory: "🕊️ Fear of Solitary Death"
         }
       ]
     },
     {
-      // CHOICE 9
-      speaker: "marty",
-      introSequence: [],
-      promptSpeaker: "marty",
-      headerText: "Choice 9: Literature & Changed Consciousness",
+      speakerKey: "marty",
+      speakerName: "Dr. Marty Welsh",
+      promptText: "I forgive you, Maury. We don't choose how we are born, but it might be nice to choose how we die. Was there anything you felt good about in life?",
+      headerText: "Step 11: Inviting Dr. Welsh to the Canvas",
       options: [
         {
-          label: "Option A (Danticat & Murakami Focus): 'Thornber talked about Danticat...'",
-          dialogueText: "Maybe. I do think people are reading less, yes. But Thornber also pointed out that there was a cancer survivor who said 'The creative process can be really healing'. So yeah, it could be that reading is decreasing. But people still get a lot of benefit from writing. And I think there are lots of sick people who read. Thornber talked about Danticat – who took a piece of literature by Murakami to Haiti after the earthquake... 'Poems, essays, memoirs, and novels can help fill depth gaps in a way that numbers and statistics can’t. One person’s well-described life and death can sometimes move us more than the mere mention of thousands of deaths.'",
+          label: "Option A (Artistic Invitation): 'I made good art apparently. Did you make art? Do you want to try?'",
+          dialogueText: "I made good art apparently. Did you make art? Do you want to try?",
           progressDelta: 10,
-          vulnerabilityDelta: 15,
           type: "calm",
-          tag: "🕊️ Danticat & Murakami Focus",
-          unlocksMemory: "📚 Danticat Literature Essay",
-          outroSequence: [
-            { speaker: "Maury Ornest", key: "maury", text: "So it helps people connect to each other?" },
-            { speaker: "Dr. Marty Welsh", key: "marty", text: "It helps with empathy. And compassion." },
-            { speaker: "Maury Ornest", key: "maury", text: "(silently looks at Dr. Welsh’s book on the table) I did feel closer to you after reading your book." },
-            { speaker: "Dr. Marty Welsh", key: "marty", text: "And I felt closer to you after reading your journals and seeing the movie about you. Even though it wasn’t with your own perspective all the time." },
-            { speaker: "Maury Ornest", key: "maury", text: "I’m sorry for what you went through. For all those years of losing your abilities. I didn’t have that the same way. My mood got worse. And then I just died one night. But it must have been hard to slowly know that things were getting worse." },
-            { speaker: "Dr. Marty Welsh", key: "marty", text: "Thank you, Maury." },
-            { speaker: "Maury Ornest", key: "maury", text: "And you know there was something wrong before everyone else. It must have been hard to have to tell them. To insist. And fight. To be believed." },
-            { speaker: "Dr. Marty Welsh", key: "marty", text: "It was hard, yes. And it was sad. It made them sad too." },
-            { speaker: "Maury Ornest", key: "maury", text: "And you didn’t have your mother from a young age. My mother was always there for me." },
-            { speaker: "Dr. Marty Welsh", key: "marty", text: "Yeah. That’s how I think I became a doctor." },
-            { speaker: "Maury Ornest", key: "maury", text: "I didn’t get a chance to know what was wrong with me before other people. But I know what it’s like to not be believed." },
-            { speaker: "Dr. Marty Welsh", key: "marty", text: "Sometimes people know the truth but feel like they can’t say it. That happened to me." },
-            { speaker: "Maury Ornest", key: "maury", text: "Yeah, you knew for months. I remember reading your book and crying. And laughing. There so many funny parts. You faced so much. You were honest." },
-            { speaker: "Dr. Marty Welsh", key: "marty", text: "Thornber says that literature can do that. She wrote that “literature… at its most basic level, helps provide medical students with communication skills, depth of insight, and acuity of perception” which is a fancy way of saying that it helps doctors “understand suffering, chronic and acute disease, disability, and death.”" },
-            { speaker: "Maury Ornest", key: "maury", text: "Both of us dealt with all of those." },
-            { speaker: "Dr. Marty Welsh", key: "marty", text: "Yes, we did. And there were many other people too. But their stories may not make it out." },
-            { speaker: "Maury Ornest", key: "maury", text: "I think all our stories are connected. Because We Are Earth. I wish I’d realized that before." },
-            { speaker: "Dr. Marty Welsh", key: "marty", text: "It’s good that you’re realizing it now. Do you want to paint that? To show people?" },
-            { speaker: "Maury Ornest", key: "maury", text: "Yes." },
-            { speaker: "Dr. Marty Welsh", key: "marty", text: "(Dr. Welsh watches quietly as Ornest begins another painting, this time of the Earth as a baseball. He makes the stitches of the baseball into people who are holding hands across the globe.)" },
-            { speaker: "Dr. Marty Welsh", key: "marty", text: "Wow." },
-            { speaker: "Maury Ornest", key: "maury", text: "Yeah. I think this is my best one yet." },
-            { speaker: "Dr. Marty Welsh", key: "marty", text: "Yeah." },
-            { speaker: "Maury Ornest", key: "maury", text: "We’re a good team." },
-            { speaker: "Dr. Marty Welsh", key: "marty", text: "Yup." }
-          ]
+          tag: "🎨 Canvas Collaboration",
+          unlocksMemory: "🖌️ Joint Painting Session"
         },
         {
-          label: "Option B (Medical Education Focus): 'Reading habits shift, but literature alters caregivers...'",
-          dialogueText: "Reading habits may shift, but literature alters how future caregivers understand human grief. Thornber notes that literature provides medical students with 'communication skills, depth of insight, and acuity of perception' to understand chronic suffering, disability, and death. One honest memoir shifts clinical culture more than a textbook.",
+          label: "Option B (Shared Creation): 'You wrote your book. Let's see what we can put on this canvas together.'",
+          dialogueText: "You wrote your book. Let's see what we can put on this canvas together.",
           progressDelta: 10,
-          vulnerabilityDelta: 10,
           type: "calm",
-          tag: "🕊️ Medical Education Focus",
-          unlocksMemory: "📚 Danticat Literature Essay",
-          outroSequence: [
-            { speaker: "Maury Ornest", key: "maury", text: "So it helps people connect to each other?" },
-            { speaker: "Dr. Marty Welsh", key: "marty", text: "It helps with empathy. And compassion." },
-            { speaker: "Maury Ornest", key: "maury", text: "(silently looks at Dr. Welsh’s book on the table) I did feel closer to you after reading your book." },
-            { speaker: "Dr. Marty Welsh", key: "marty", text: "And I felt closer to you after reading your journals and seeing the movie about you. Even though it wasn’t with your own perspective all the time." },
-            { speaker: "Maury Ornest", key: "maury", text: "I’m sorry for what you went through. For all those years of losing your abilities. I didn’t have that the same way. My mood got worse. And then I just died one night. But it must have been hard to slowly know that things were getting worse." },
-            { speaker: "Dr. Marty Welsh", key: "marty", text: "Thank you, Maury." },
-            { speaker: "Maury Ornest", key: "maury", text: "And you know there was something wrong before everyone else. It must have been hard to have to tell them. To insist. And fight. To be believed." },
-            { speaker: "Dr. Marty Welsh", key: "marty", text: "It was hard, yes. And it was sad. It made them sad too." },
-            { speaker: "Maury Ornest", key: "maury", text: "And you didn’t have your mother from a young age. My mother was always there for me." },
-            { speaker: "Dr. Marty Welsh", key: "marty", text: "Yeah. That’s how I think I became a doctor." },
-            { speaker: "Maury Ornest", key: "maury", text: "I didn’t get a chance to know what was wrong with me before other people. But I know what it’s like to not be believed." },
-            { speaker: "Dr. Marty Welsh", key: "marty", text: "Sometimes people know the truth but feel like they can’t say it. That happened to me." },
-            { speaker: "Maury Ornest", key: "maury", text: "Yeah, you knew for months. I remember reading your book and crying. And laughing. There so many funny parts. You faced so much. You were honest." },
-            { speaker: "Dr. Marty Welsh", key: "marty", text: "Thornber says that literature can do that. She wrote that “literature… at its most basic level, helps provide medical students with communication skills, depth of insight, and acuity of perception” which is a fancy way of saying that it helps doctors “understand suffering, chronic and acute disease, disability, and death.”" },
-            { speaker: "Maury Ornest", key: "maury", text: "Both of us dealt with all of those." },
-            { speaker: "Dr. Marty Welsh", key: "marty", text: "Yes, we did. And there were many other people too. But their stories may not make it out." },
-            { speaker: "Maury Ornest", key: "maury", text: "I think all our stories are connected. Because We Are Earth. I wish I’d realized that before." },
-            { speaker: "Dr. Marty Welsh", key: "marty", text: "It’s good that you’re realizing it now. Do you want to paint that? To show people?" },
-            { speaker: "Maury Ornest", key: "maury", text: "Yes." },
-            { speaker: "Dr. Marty Welsh", key: "marty", text: "(Dr. Welsh watches quietly as Ornest begins another painting, this time of the Earth as a baseball. He makes the stitches of the baseball into people who are holding hands across the globe.)" },
-            { speaker: "Dr. Marty Welsh", key: "marty", text: "Wow." },
-            { speaker: "Maury Ornest", key: "maury", text: "Yeah. I think this is my best one yet." },
-            { speaker: "Dr. Marty Welsh", key: "marty", text: "Yeah." },
-            { speaker: "Maury Ornest", key: "maury", text: "We’re a good team." },
-            { speaker: "Dr. Marty Welsh", key: "marty", text: "Yup." }
-          ]
+          tag: "🎨 Creative Alliance",
+          unlocksMemory: "🖌️ Joint Painting Session"
         }
       ]
     },
     {
-      // CHOICE 10
-      speaker: "maury",
-      introSequence: [],
-      promptSpeaker: "maury",
-      headerText: "Choice 10: The Reincarnation Covenant",
+      speakerKey: "marty",
+      speakerName: "Dr. Marty Welsh",
+      promptText: "(rolls over to the canvas with Maury) I was average looking, but I had a good family supporting me.",
+      headerText: "Step 12: Remembering Your Father",
       options: [
         {
-          label: "Option A (The Single Soul): 'Maybe we should go down there together. As one person.'",
-          dialogueText: "Maybe we should go down there together. As one person.",
+          label: "Option A (Father's Expectations): 'I miss my father. He was strict and ambitious. He had high hopes for me. I think, in the end, I let him down.'",
+          dialogueText: "I miss my father. He was strict and ambitious. He had high hopes for me. I think, in the end, I let him down.",
           progressDelta: 10,
-          vulnerabilityDelta: 10,
+          type: "calm",
+          tag: "🕊️ Paternal Grief",
+          unlocksMemory: "👴 Paternal Legacy"
+        },
+        {
+          label: "Option B (Desire for Redemption): 'I want to go back so his soul knows I didn't waste my second chance.'",
+          dialogueText: "I want to go back so his soul knows I didn't waste my second chance.",
+          progressDelta: 10,
+          type: "calm",
+          tag: "🕊️ Soul Redemption",
+          unlocksMemory: "👴 Paternal Legacy"
+        }
+      ]
+    },
+    {
+      speakerKey: "marty",
+      speakerName: "Dr. Marty Welsh",
+      promptText: "In Dr. Nobel's book, they talk about belonging and purpose. What would you do differently this time?",
+      headerText: "Step 13: Shifting Goals for Reincarnation",
+      options: [
+        {
+          label: "Option A (Chasing Connection): 'I’d make sure not to chase success so much but to chase connection and friendships.'",
+          dialogueText: "I’d make sure not to chase success so much but to chase connection and friendships.",
+          progressDelta: 10,
+          type: "calm",
+          tag: "🕊️ Connection Over Success",
+          unlocksMemory: "🤝 Purpose Shift"
+        },
+        {
+          label: "Option B (Fear of Wasted Friendships): 'I don't know how to make friends. I always feel like their love is wasted on me.'",
+          dialogueText: "I don't know how to make friends. I always feel like their love is wasted on me.",
+          progressDelta: 10,
+          type: "tense",
+          tag: "⚡ Connection Barrier",
+          unlocksMemory: "🤝 Purpose Shift"
+        }
+      ]
+    },
+    {
+      speakerKey: "marty",
+      speakerName: "Dr. Marty Welsh",
+      promptText: "Yes, making friends can be hard. But Earth is getting more dangerous with climate catastrophes and issues.",
+      headerText: "Step 14: Finding Community in Disasters",
+      options: [
+        {
+          label: "Option A (Shared Crisis Empathy): 'In a climate emergency, at least people have empathy. No one thinks you're a failure because a fire happened.'",
+          dialogueText: "In a climate emergency, at least people have empathy. No one thinks you're a failure because a fire happened.",
+          progressDelta: 10,
+          type: "calm",
+          tag: "🕊️ Disaster Empathy",
+          unlocksMemory: "🔥 Climate Precarity"
+        },
+        {
+          label: "Option B (Public Grief vs Hidden Sickness): 'My disorder was hidden in secret. A climate disaster is public. It's not seen as your personal fault.'",
+          dialogueText: "My disorder was hidden in secret. A climate disaster is public. It's not seen as your personal fault.",
+          progressDelta: 10,
+          type: "calm",
+          tag: "🕊️ Unhidden Suffering",
+          unlocksMemory: "🔥 Climate Precarity"
+        }
+      ]
+    },
+    {
+      speakerKey: "marty",
+      speakerName: "Dr. Marty Welsh",
+      promptText: "I really don't want to become physically disabled again in the middle of all this catastrophe.",
+      headerText: "Step 15: Comparing Mental & Physical Disability",
+      options: [
+        {
+          label: "Option A (Defending Schizoaffective Pain): 'Yeah, but you were just physically disabled. Mental illness isolates your mind completely.'",
+          dialogueText: "Yeah, but you were just physically disabled. Mental illness isolates your mind completely.",
+          progressDelta: -5,
+          type: "tense",
+          tag: "⚡ Mental vs Physical",
+          unlocksMemory: "🧠 Disability Hierarchy"
+        },
+        {
+          label: "Option B (Fear of Losing Painting): '(looks away, ashamed) If I couldn't paint down there... I wouldn't have anything left.'",
+          dialogueText: "(looks away, ashamed) If I couldn't paint down there... I wouldn't have anything left.",
+          progressDelta: 10,
+          type: "calm",
+          tag: "🕊️ Artistic Vulnerability",
+          unlocksMemory: "🧠 Disability Hierarchy"
+        }
+      ]
+    },
+    {
+      speakerKey: "marty",
+      speakerName: "Dr. Marty Welsh",
+      promptText: "When I look at Earth like this in our painting, and see how small people are, it's almost like the people are Earth.",
+      headerText: "Step 16: Coining 'We Are Earth'",
+      options: [
+        {
+          label: "Option A (Universal Realization): 'When you look at the planet like that... We Are Earth.'",
+          dialogueText: "When you look at the planet like that... We Are Earth.",
+          progressDelta: 15,
+          type: "calm",
+          tag: "✨ We Are Earth",
+          unlocksMemory: "🌍 We Are Earth Thesis"
+        },
+        {
+          label: "Option B (Shared Climate Destiny): 'If everyone is facing the same disasters, then none of us are truly alone.'",
+          dialogueText: "If everyone is facing the same disasters, then none of us are truly alone.",
+          progressDelta: 15,
+          type: "calm",
+          tag: "✨ Shared Destiny",
+          unlocksMemory: "🌍 We Are Earth Thesis"
+        }
+      ]
+    },
+    {
+      speakerKey: "marty",
+      speakerName: "Dr. Marty Welsh",
+      promptText: "Dr. Nobel said art uses overlapping neural networks as social interaction which makes art a powerful antidote to chronic loneliness.",
+      headerText: "Step 17: Realizing Flying Fish Paintings as Medicine",
+      options: [
+        {
+          label: "Option A (Flying Fish Alter Ego): 'You mean my flying fish paintings were an alter ego making me feel less lonely?'",
+          dialogueText: "You mean my flying fish paintings were an alter ego making me feel less lonely?",
+          progressDelta: 10,
+          type: "calm",
+          tag: "🎨 Flying Fish Alter Ego",
+          unlocksMemory: "🎨 Art as Loneliness Medicine"
+        },
+        {
+          label: "Option B (Vibrant Color Therapy): 'I painted them so magnificent because I wanted to create the joy I wasn't receiving.'",
+          dialogueText: "I painted them so magnificent because I wanted to create the joy I wasn't receiving.",
+          progressDelta: 10,
+          type: "calm",
+          tag: "🎨 Vibrant Healing",
+          unlocksMemory: "🎨 Art as Loneliness Medicine"
+        }
+      ]
+    },
+    {
+      speakerKey: "marty",
+      speakerName: "Dr. Marty Welsh",
+      promptText: "(watches quietly as Maury completes the Baseball Earth painting with stitched hands holding across the globe) Wow, Maury.",
+      headerText: "Step 18: Final Reincarnation Covenant",
+      options: [
+        {
+          label: "Option A (The Single Soul): 'We're a good team. Maybe we should go down there together. As one person.'",
+          dialogueText: "We're a good team. Maybe we should go down there together. As one person.",
+          progressDelta: 15,
           type: "calm",
           tag: "✨ The Single Soul",
-          unlocksMemory: "⚾ Baseball Earth Canvas",
-          outroSequence: [
-            { speaker: "Dr. Marty Welsh", key: "marty", text: "Can we do that?" },
-            { speaker: "Maury Ornest", key: "maury", text: "It never hurt to ask." },
-            { speaker: "Dr. Marty Welsh", key: "marty", text: "What would happen?" },
-            { speaker: "Maury Ornest", key: "maury", text: "Who knows – but it would make a great story." }
-          ]
+          unlocksMemory: "⚾ Baseball Earth Covenant"
         },
         {
-          label: "Option B (The Connected Duo): 'Maybe we should go down at the same time...'",
-          dialogueText: "Maybe we should go down there at the same time. Different places, but working together.",
-          progressDelta: 10,
-          vulnerabilityDelta: 10,
+          label: "Option B (The Connected Duo): 'We're a good team. Let's reincarnate as parallel guides to bring art and medicine back to Earth.'",
+          dialogueText: "We're a good team. Let's reincarnate as parallel guides to bring art and medicine back to Earth.",
+          progressDelta: 15,
           type: "calm",
-          tag: "🕊️ The Connected Duo",
-          unlocksMemory: "⚾ Baseball Earth Canvas",
-          outroSequence: [
-            { speaker: "Dr. Marty Welsh", key: "marty", text: "Two souls carrying the same realization? That could work." },
-            { speaker: "Maury Ornest", key: "maury", text: "Imagine the art and the care we could bring this time." },
-            { speaker: "Dr. Marty Welsh", key: "marty", text: "It would make an incredible story." }
-          ]
+          tag: "🕊️ Parallel Guides",
+          unlocksMemory: "⚾ Baseball Earth Covenant"
         }
       ]
     }
@@ -1129,60 +947,18 @@
   function typeWriterText(text, targetId, charKey) {
     if (typewriterTimeout) clearTimeout(typewriterTimeout);
     const elem = document.getElementById(targetId);
-    elem.innerText = "";
+    elem.textContent = "";
     let i = 0;
     const speed = charKey === 'maury' ? 18 : 28;
 
     function type() {
       if (i < text.length) {
-        elem.innerText += text.charAt(i);
+        elem.textContent += text.charAt(i);
         i++;
         typewriterTimeout = setTimeout(type, speed);
       }
     }
     type();
-  }
-
-  function renderCurrentSequenceLine() {
-    const currentStepData = gameScript[gameState.step];
-    const currentSeq = gameState.inOutro 
-      ? gameState.selectedOption.outroSequence 
-      : currentStepData.introSequence;
-
-    if (!currentSeq || gameState.seqIndex >= currentSeq.length) {
-      if (!gameState.inOutro) {
-        setupDialoguePhasePrompt(currentStepData);
-      } else {
-        gameState.step++;
-        gameState.seqIndex = 0;
-        gameState.inOutro = false;
-        gameState.selectedOption = null;
-        loadScriptStep();
-      }
-      return;
-    }
-
-    const item = currentSeq[gameState.seqIndex];
-    const dialogueBox = document.getElementById("top-dialogue-box");
-    const speakerTag = document.getElementById("speaker-tag");
-
-    const isMaury = item.key === 'maury';
-    dialogueBox.className = isMaury ? 'maury-theme' : 'marty-theme';
-    speakerTag.className = isMaury ? 'maury-text' : 'marty-text';
-    speakerTag.innerText = item.speaker;
-
-    document.getElementById("card-maury").classList.toggle("active", isMaury);
-    document.getElementById("card-marty").classList.toggle("active", !isMaury);
-
-    typeWriterText(`"${item.text}"`, "dialogue-text", item.key);
-
-    const banner = document.getElementById("instruction-banner");
-    banner.className = "";
-    banner.innerText = "👉 Click to continue line...";
-    banner.onclick = () => {
-      gameState.seqIndex++;
-      renderCurrentSequenceLine();
-    };
   }
 
   function loadScriptStep() {
@@ -1194,28 +970,27 @@
     const currentStepData = gameScript[gameState.step];
     gameState.phase = 'dialogue';
 
+    // Hide choices & progress meter on Phase 1 (Dialogue Display)
     document.getElementById("choice-area").style.display = "none";
     document.getElementById("choice-area-header").style.display = "none";
     document.getElementById("meter-container").style.display = "none";
 
-    if (currentStepData.introSequence && currentStepData.introSequence.length > 0) {
-      document.getElementById("choices").innerHTML = "";
-      gameState.seqIndex = 0;
-      gameState.inOutro = false;
-      renderCurrentSequenceLine();
-    } else {
-      setupDialoguePhasePrompt(currentStepData);
-    }
-  }
+    const dialogueBox = document.getElementById("top-dialogue-box");
+    const speakerTag = document.getElementById("speaker-tag");
 
-  function setupDialoguePhasePrompt(stepData) {
-    const isMauryPrompt = stepData.promptSpeaker === 'maury';
-    const targetSpeaker = isMauryPrompt ? "Maury" : "Dr. Welsh";
+    dialogueBox.className = currentStepData.speakerKey === 'maury' ? 'maury-theme' : 'marty-theme';
+    speakerTag.className = currentStepData.speakerKey === 'maury' ? 'maury-text' : 'marty-text';
+    speakerTag.innerText = currentStepData.speakerName;
+
+    document.getElementById("card-maury").classList.toggle("active", currentStepData.speakerKey === 'maury');
+    document.getElementById("card-marty").classList.toggle("active", currentStepData.speakerKey === 'marty');
+
+    typeWriterText(`"${currentStepData.promptText}"`, "dialogue-text", currentStepData.speakerKey);
+
     const banner = document.getElementById("instruction-banner");
-    
     banner.className = "";
-    banner.innerText = `👇 Choose ${targetSpeaker}'s Response ->`;
-    banner.onclick = () => transitionToChoicePhase(stepData);
+    banner.innerText = "👇 Choose Maury's Response ->";
+    banner.onclick = () => transitionToChoicePhase(currentStepData);
 
     document.getElementById("choices").innerHTML = "";
     updateProgressBar(0);
@@ -1224,6 +999,7 @@
   function transitionToChoicePhase(stepData) {
     gameState.phase = 'choice';
 
+    // Reveal choices & progress meter on Phase 2 (Choice Selection)
     document.getElementById("choice-area").style.display = "block";
     document.getElementById("choice-area-header").style.display = "block";
     document.getElementById("meter-container").style.display = "block";
@@ -1232,10 +1008,8 @@
   }
 
   function renderChoiceOptions(stepData) {
-    const isMauryPrompt = stepData.promptSpeaker === 'maury';
-
-    document.getElementById("card-maury").classList.toggle("active", isMauryPrompt);
-    document.getElementById("card-marty").classList.toggle("active", !isMauryPrompt);
+    document.getElementById("card-maury").classList.add("active");
+    document.getElementById("card-marty").classList.remove("active");
 
     const banner = document.getElementById("instruction-banner");
     banner.className = "no-click";
@@ -1243,16 +1017,16 @@
     banner.innerText = stepData.headerText;
 
     const choiceArea = document.getElementById("choice-area");
-    choiceArea.className = isMauryPrompt ? "maury-choice-theme" : "marty-choice-theme";
+    choiceArea.className = "maury-choice-theme";
 
-    document.getElementById("choice-area-header").innerText = `Select ${isMauryPrompt ? 'Maury' : 'Dr. Welsh'}'s Option:`;
+    document.getElementById("choice-area-header").innerText = `Select Maury's Response:`;
 
     const choicesDiv = document.getElementById("choices");
     choicesDiv.innerHTML = "";
 
     stepData.options.forEach((opt, idx) => {
       const btn = document.createElement("button");
-      btn.className = `choice-btn ${isMauryPrompt ? 'maury-btn' : 'marty-btn'}`;
+      btn.className = `choice-btn maury-btn`;
       btn.style.animationDelay = `${idx * 0.1}s`;
       btn.innerHTML = `
         <span>${opt.label}</span>
@@ -1269,17 +1043,14 @@
   }
 
   function executeChoiceOption(selectedOpt, stepData) {
-    const isMauryPrompt = stepData.promptSpeaker === 'maury';
-    const speakerName = isMauryPrompt ? "Maury Ornest" : "Dr. Marty Welsh";
-
     const dialogueBox = document.getElementById("top-dialogue-box");
     const speakerTag = document.getElementById("speaker-tag");
 
-    dialogueBox.className = isMauryPrompt ? 'maury-theme' : 'marty-theme';
-    speakerTag.className = isMauryPrompt ? 'maury-text' : 'marty-text';
-    speakerTag.innerText = speakerName;
+    dialogueBox.className = 'maury-theme';
+    speakerTag.className = 'maury-text';
+    speakerTag.innerText = "Maury Ornest";
 
-    typeWriterText(`"${selectedOpt.dialogueText}"`, "dialogue-text", stepData.promptSpeaker);
+    typeWriterText(`"${selectedOpt.dialogueText}"`, "dialogue-text", "maury");
 
     if (selectedOpt.unlocksMemory && !gameState.unlockedMemories.includes(selectedOpt.unlocksMemory)) {
       gameState.unlockedMemories.push(selectedOpt.unlocksMemory);
@@ -1290,27 +1061,11 @@
 
     document.getElementById("choices").innerHTML = "";
 
-    document.getElementById("choice-area").style.display = "none";
-    document.getElementById("choice-area-header").style.display = "none";
-    document.getElementById("meter-container").style.display = "none";
-
-    const banner = document.getElementById("instruction-banner");
-    banner.className = "";
-    banner.innerText = "👉 Click to continue conversation...";
-    banner.onclick = () => {
-      if (selectedOpt.outroSequence && selectedOpt.outroSequence.length > 0) {
-        gameState.selectedOption = selectedOpt;
-        gameState.inOutro = true;
-        gameState.seqIndex = 0;
-        renderCurrentSequenceLine();
-      } else {
-        gameState.step++;
-        gameState.seqIndex = 0;
-        gameState.inOutro = false;
-        gameState.selectedOption = null;
-        loadScriptStep();
-      }
-    };
+    // Automatically advance to next scene after choice selection
+    gameState.step++;
+    setTimeout(() => {
+      loadScriptStep();
+    }, 1400);
   }
 
   function renderMemoryTray() {
@@ -1340,10 +1095,10 @@
     gameState.resolutionProgress = Math.max(10, Math.min(100, gameState.resolutionProgress + delta));
 
     const statusLabel = document.getElementById("meter-status");
-    statusLabel.innerText = `Choice ${Math.min(10, gameState.step + 1)} of 10`;
+    statusLabel.innerText = `Micro-Step ${Math.min(18, gameState.step + 1)} of 18`;
 
     const fill = document.getElementById("meter-fill");
-    fill.style.width = `${((gameState.step + 1) / 10) * 100}%`;
+    fill.style.width = `${((gameState.step + 1) / 18) * 100}%`;
 
     if (gameState.resolutionProgress > 70) {
       document.body.style.background = "radial-gradient(circle at 50% 30%, #4a382c 0%, #1c140e 100%)";
@@ -1360,9 +1115,9 @@
     const resetBtn = document.getElementById("reset-btn");
     const banner = document.getElementById("instruction-banner");
 
-    speakerTag.className = "";
-    speakerTag.innerText = "Ending: We Are Earth (Reincarnation Synthesis)";
-    typeWriterText("The dialogue loop is complete. Maury and Dr. Welsh have woven art, clinical insight, and mutual empathy into a unified proposal for their return to Earth.", "dialogue-text", "marty");
+    speakerTag.className = "maury-text";
+    speakerTag.innerText = "Ending: We Are Earth (Maury's Covenant)";
+    typeWriterText("The micro-step dialogue loop is complete. Inhabiting Maury's perspective, you turned defense mechanisms and trauma into a shared artistic covenant for return to Earth.", "dialogue-text", "maury");
 
     dialogueBox.style.borderColor = "#10b981";
     banner.className = "no-click";
@@ -1381,14 +1136,10 @@
   function resetGame() {
     gameState = {
       step: 0,
-      seqIndex: 0,
-      inOutro: false,
-      selectedOption: null,
       phase: 'dialogue',
       resolutionProgress: 10,
-      vulnerability: 20,
       unlockedMemories: [],
-      currentSpeaker: 'marty'
+      currentSpeaker: 'maury'
     };
 
     const dialogueBox = document.getElementById("top-dialogue-box");
@@ -1403,7 +1154,7 @@
     const banner = document.getElementById("instruction-banner");
     banner.className = "no-click";
     banner.onclick = null;
-    banner.innerText = "👇 Choose Dr. Welsh's response";
+    banner.innerText = "👇 Choose Maury's response";
     banner.style.background = "linear-gradient(135deg, #10b981 0%, #059669 100%)";
     banner.style.borderColor = "#34d399";
     banner.style.boxShadow = "0 6px 0 #047857";
