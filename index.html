@@ -65,110 +65,7 @@
       object-fit: cover;
     }
 
-    /* Stage Layout & Character Cards (Marty Left, Maury Right) */
-    #stage {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 16px;
-      margin-bottom: 20px;
-    }
-    
-    .char-card {
-      background: #f3e9d7;
-      border: 3px solid #c8b196;
-      border-radius: 20px;
-      padding: 16px;
-      text-align: center;
-      transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-      position: relative;
-      opacity: 0.55;
-      filter: grayscale(30%);
-      transform: scale(0.97);
-    }
-    
-    /* Character Spotlight Pulses */
-    .char-card[data-char="maury"].active {
-      opacity: 1;
-      filter: grayscale(0%);
-      transform: scale(1.02);
-      border-color: #f59e0b;
-      background: #fff8eb;
-      box-shadow: 0 8px 0 #d97706, 0 0 25px rgba(245, 158, 11, 0.35);
-      animation: paliaPulseMaury 2.5s ease-in-out infinite alternate;
-    }
-    
-    .char-card[data-char="marty"].active {
-      opacity: 1;
-      filter: grayscale(0%);
-      transform: scale(1.02);
-      border-color: #3b82f6;
-      background: #f0f7ff;
-      box-shadow: 0 8px 0 #2563eb, 0 0 25px rgba(59, 130, 246, 0.35);
-      animation: paliaPulseMarty 2.5s ease-in-out infinite alternate;
-    }
-
-    @keyframes paliaPulseMaury {
-      0% { box-shadow: 0 8px 0 #d97706, 0 0 15px rgba(245, 158, 11, 0.2); }
-      100% { box-shadow: 0 8px 0 #b45309, 0 0 30px rgba(245, 158, 11, 0.5); }
-    }
-
-    @keyframes paliaPulseMarty {
-      0% { box-shadow: 0 8px 0 #2563eb, 0 0 15px rgba(59, 130, 246, 0.2); }
-      100% { box-shadow: 0 8px 0 #1d4ed8, 0 0 30px rgba(59, 130, 246, 0.5); }
-    }
-
-    .avatar-wrapper {
-      position: relative;
-      width: 100px;
-      height: 100px;
-      margin: 0 auto 10px;
-    }
-    
-    .avatar {
-      width: 100%;
-      height: 100%;
-      border-radius: 50%;
-      background-size: cover;
-      background-position: center 15%;
-      background-repeat: no-repeat;
-      border: 4px solid #fff;
-      box-shadow: 0 4px 8px rgba(0,0,0,0.15);
-      transition: border-color 0.3s ease;
-    }
-    
-    .char-card[data-char="maury"].active .avatar { border-color: #fbbf24; }
-    .char-card[data-char="marty"].active .avatar { border-color: #60a5fa; }
-
-    .char-name {
-      font-family: 'Fredoka', sans-serif;
-      font-size: 1.2rem;
-      font-weight: 600;
-      color: #382c40;
-      margin-bottom: 2px;
-    }
-    .char-role {
-      font-size: 0.82rem;
-      color: #786458;
-      font-weight: 600;
-      margin-bottom: 10px;
-    }
-    
-    .status-badge {
-      display: inline-block;
-      font-family: 'Fredoka', sans-serif;
-      font-size: 0.75rem;
-      font-weight: 600;
-      text-transform: uppercase;
-      padding: 4px 12px;
-      border-radius: 14px;
-      background: #e6dac8;
-      color: #6b584a;
-    }
-    
-    .char-card[data-char="maury"].active .status-badge { background: #fef3c7; color: #b45309; }
-    .char-card[data-char="marty"].active .status-badge { background: #dbeafe; color: #1e40af; }
-
-    /* Dialogue Box */
+    /* Dialogue Log Box (Scrollable Conversation Container) */
     #top-dialogue-box {
       background: #fffdf7;
       border: 3px solid #cbac88;
@@ -176,39 +73,56 @@
       padding: 20px 24px;
       margin-bottom: 20px;
       box-shadow: 0 4px 12px rgba(0,0,0,0.06);
-      min-height: 105px;
+      max-height: 280px;
+      min-height: 120px;
+      overflow-y: auto;
+      scroll-behavior: smooth;
       position: relative;
       transition: all 0.3s ease;
-      overflow-wrap: break-word;
-      word-wrap: break-word;
-      word-break: break-word;
-    }
-    
-    #top-dialogue-box.maury-theme {
-      border-color: #e5933d;
-      background: linear-gradient(135deg, #fffdf7 0%, #fff7eb 100%);
-      box-shadow: 0 0 20px rgba(229, 147, 61, 0.25);
-    }
-    
-    #top-dialogue-box.marty-theme {
-      border-color: #4a9ec5;
-      background: linear-gradient(135deg, #fffdf7 0%, #f0f8fd 100%);
-      box-shadow: 0 0 20px rgba(74, 158, 197, 0.25);
     }
 
-    #speaker-tag {
+    .log-entry {
+      margin-bottom: 14px;
+      padding-bottom: 10px;
+      border-bottom: 1px dashed #e2d3be;
+    }
+
+    .log-entry:last-child {
+      margin-bottom: 0;
+      padding-bottom: 0;
+      border-bottom: none;
+    }
+
+    .log-header {
+      display: flex;
+      align-items: center;
+      margin-bottom: 6px;
+    }
+
+    .log-avatar {
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      object-fit: cover;
+      margin-right: 10px;
+      border: 2px solid #fff;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.15);
+      flex-shrink: 0;
+    }
+
+    .log-speaker {
       font-family: 'Fredoka', sans-serif;
       font-weight: 700;
-      font-size: 1.25rem;
-      letter-spacing: 0.5px;
-      margin-bottom: 6px;
-      display: block;
-    }
-    .maury-text { color: #d97706; }
-    .marty-text { color: #2563eb; }
-    
-    #dialogue-text {
       font-size: 1.1rem;
+      letter-spacing: 0.5px;
+      display: inline-block;
+    }
+
+    .log-speaker.maury-text { color: #d97706; }
+    .log-speaker.marty-text { color: #2563eb; }
+
+    .log-text {
+      font-size: 1.05rem;
       line-height: 1.5;
       color: #4a382d;
       font-weight: 600;
@@ -217,6 +131,7 @@
       word-break: break-word;
       hyphens: auto;
       white-space: pre-wrap;
+      display: block;
     }
 
     /* Memory Hooks Tray */
@@ -428,32 +343,8 @@
     </video>
   </div>
 
-  <!-- Character Stage (Marty Left, Maury Right) -->
-  <div id="stage">
-    <div id="card-marty" class="char-card" data-char="marty">
-      <div class="avatar-wrapper">
-        <div id="avatar-marty" class="avatar"></div>
-      </div>
-      <div class="char-name">Dr. Marty Welsh</div>
-      <div class="char-role">Physician & Author</div>
-      <span id="badge-marty" class="status-badge">[Waiting]</span>
-    </div>
-
-    <div id="card-maury" class="char-card active" data-char="maury">
-      <div class="avatar-wrapper">
-        <div id="avatar-maury" class="avatar"></div>
-      </div>
-      <div class="char-name">Maury Ornest</div>
-      <div class="char-role">Artist & Expressionist</div>
-      <span id="badge-maury" class="status-badge">[Playing]</span>
-    </div>
-  </div>
-
-  <!-- Active Dialogue Box -->
-  <div id="top-dialogue-box" class="maury-theme">
-    <span id="speaker-tag" class="maury-text">Maury Ornest</span>
-    <span id="dialogue-text">Maury Ornest and Dr. Marty Welsh are waiting in a holding room for people who are about to re-incarnate on Earth...</span>
-  </div>
+  <!-- Scrollable Dialogue Log Box -->
+  <div id="top-dialogue-box" class="maury-theme"></div>
 
   <!-- Memory Hooks Tray -->
   <div id="memory-tray"></div>
@@ -465,9 +356,8 @@
   <div id="meter-container" style="display: none;">
     <div class="meter-section">
       <div class="meter-labels">
-        <span class="label-left">💥 Micro-Step 1 of 18</span>
-        <span id="meter-status" style="color: #d97706;">Progress: 5%</span>
-        <span class="label-right">🤝 Step 18 of 18</span>
+        <span id="meter-left-label" class="label-left">💥 Turn 1 of 18</span>
+        <span id="meter-right-label" class="label-right">🤝 Turn 18 of 18</span>
       </div>
       <div id="meter-track">
         <div id="meter-center-marker"></div>
@@ -489,7 +379,7 @@
 <script>
   let gameState = {
     step: 0,
-    phase: 'dialogue', // Two-Phase Clean Flow: 'dialogue' or 'choice'
+    phase: 'dialogue', // 'dialogue', 'choice', or 'reaction'
     resolutionProgress: 10,
     unlockedMemories: [],
     currentSpeaker: 'maury'
@@ -502,13 +392,13 @@
     marty: "1.png"
   };
 
-  // Consolidated Single-String Dialogue Micro Nodes (Locked to Maury's Perspective)
+  // 18 Turn Script Array with Dr. Welsh Prompts, Maury Options & Reaction Responses
   const gameScript = [
     {
       speakerKey: "marty",
       speakerName: "Dr. Marty Welsh",
       promptText: "Wow, this room is beautiful.",
-      headerText: "Step 1: Identifying Dr. Welsh",
+      headerText: "Turn 1: Identifying Dr. Welsh",
       options: [
         {
           label: "Option A (Direct Acknowledgment): 'Thanks. You’re that doctor who died from ALS.'",
@@ -516,7 +406,10 @@
           progressDelta: 5,
           type: "calm",
           tag: "🕊️ Direct",
-          unlocksMemory: "🩺 Recognized Dr. Welsh"
+          unlocksMemory: "🩺 Recognized Dr. Welsh",
+          responseSpeaker: "Dr. Marty Welsh",
+          responseKey: "marty",
+          responseText: "Yes, ha-ha. I watched the movie about you. Do you have your journals here?"
         },
         {
           label: "Option B (Guarded Observation): 'I know who you are. The ALS doctor from the books.'",
@@ -524,15 +417,18 @@
           progressDelta: 5,
           type: "tense",
           tag: "⚡ Guarded",
-          unlocksMemory: "🩺 Recognized Dr. Welsh"
+          unlocksMemory: "🩺 Recognized Dr. Welsh",
+          responseSpeaker: "Dr. Marty Welsh",
+          responseKey: "marty",
+          responseText: "Yes, ha-ha. I watched the movie about you. Do you have your journals here?"
         }
       ]
     },
     {
       speakerKey: "marty",
       speakerName: "Dr. Marty Welsh",
-      promptText: "Yes, ha-ha. I watched the movie about you. Do you have your journals here?",
-      headerText: "Step 2: Defending Your Private Journals",
+      promptText: null, // Omitted to prevent duplicate text after Turn 1 reaction
+      headerText: "Turn 2: Defending Your Private Journals",
       options: [
         {
           label: "Option A (Frustrated Boundary): 'Yes, but they’re not for anyone else to read. Laura messed that up. Those were my most private thoughts.'",
@@ -540,7 +436,10 @@
           progressDelta: 5,
           type: "tense",
           tag: "⚡ Boundaries",
-          unlocksMemory: "📖 Private Journals"
+          unlocksMemory: "📖 Private Journals",
+          responseSpeaker: "Dr. Marty Welsh",
+          responseKey: "marty",
+          responseText: "Maybe you should consider going public with your thoughts on your own terms."
         },
         {
           label: "Option B (Resentful Defense): 'Laura had no right to share them with the world. They were meant for me.'",
@@ -548,15 +447,18 @@
           progressDelta: 5,
           type: "tense",
           tag: "⚡ Resentment",
-          unlocksMemory: "📖 Private Journals"
+          unlocksMemory: "📖 Private Journals",
+          responseSpeaker: "Dr. Marty Welsh",
+          responseKey: "marty",
+          responseText: "Maybe you should consider going public with your thoughts on your own terms."
         }
       ]
     },
     {
       speakerKey: "marty",
       speakerName: "Dr. Marty Welsh",
-      promptText: "Maybe you should consider going public with your thoughts.",
-      headerText: "Step 3: Pushing Back Against Dr. Welsh",
+      promptText: null,
+      headerText: "Turn 3: Pushing Back Against Dr. Welsh",
       options: [
         {
           label: "Option A (Challenging Privilege): 'That’s easy for you to say, Mr. Successful Dr. Anonymous. You had a career. You had a wife who loved you and stayed with you. You’re not like me.'",
@@ -564,7 +466,10 @@
           progressDelta: 5,
           type: "tense",
           tag: "⚡ Confrontational",
-          unlocksMemory: "⚡ Challenged Marty"
+          unlocksMemory: "⚡ Challenged Marty",
+          responseSpeaker: "Dr. Marty Welsh",
+          responseKey: "marty",
+          responseText: "Yes, I did. And part of the way I did that was by not being lonely. Like Jeremy Nobel says."
         },
         {
           label: "Option B (Exposing Difference): 'You don't know what it's like to have your mind exposed while everyone abandons you.'",
@@ -572,15 +477,18 @@
           progressDelta: 5,
           type: "tense",
           tag: "⚡ Raw Grief",
-          unlocksMemory: "⚡ Challenged Marty"
+          unlocksMemory: "⚡ Challenged Marty",
+          responseSpeaker: "Dr. Marty Welsh",
+          responseKey: "marty",
+          responseText: "Yes, I did. And part of the way I did that was by not being lonely. Like Jeremy Nobel says."
         }
       ]
     },
     {
       speakerKey: "marty",
       speakerName: "Dr. Marty Welsh",
-      promptText: "Yes, I did. And part of the way I did that was by not being lonely. Like Jeremy Nobel says.",
-      headerText: "Step 4: Questioning Jeremy Nobel's Advice",
+      promptText: null,
+      headerText: "Turn 4: Questioning Jeremy Nobel's Advice",
       options: [
         {
           label: "Option A (Focus on Broken Hand): 'What does he know? He had a sister with a disability, sure, but did he have any issues? Did he break his hand and end his chance at his career? He just kept succeeding.'",
@@ -588,7 +496,10 @@
           progressDelta: 5,
           type: "tense",
           tag: "⚡ Hand Injury Trauma",
-          unlocksMemory: "🎨 Broken Hand Trauma"
+          unlocksMemory: "🎨 Broken Hand Trauma",
+          responseSpeaker: "Dr. Marty Welsh",
+          responseKey: "marty",
+          responseText: "Yeah, he did have some setbacks, but not as big as you or me."
         },
         {
           label: "Option B (Focus on Easy Success): 'Success makes it easy to preach about connection. He didn't lose his entire livelihood.'",
@@ -596,15 +507,18 @@
           progressDelta: 5,
           type: "tense",
           tag: "⚡ Skeptical",
-          unlocksMemory: "🎨 Broken Hand Trauma"
+          unlocksMemory: "🎨 Broken Hand Trauma",
+          responseSpeaker: "Dr. Marty Welsh",
+          responseKey: "marty",
+          responseText: "Yeah, he did have some setbacks, but not as big as you or me."
         }
       ]
     },
     {
       speakerKey: "marty",
       speakerName: "Dr. Marty Welsh",
-      promptText: "Yeah, he did have some setbacks, and not as big as you or me.",
-      headerText: "Step 5: Calling Out Solitude",
+      promptText: null,
+      headerText: "Turn 5: Calling Out Solitude",
       options: [
         {
           label: "Option A (Citing Dr. Welsh's Book): 'Exactly! Easy for him to tell us not to be lonely. You even said in your book how you felt alone.'",
@@ -612,7 +526,10 @@
           progressDelta: 10,
           type: "calm",
           tag: "🕊️ Book Citation",
-          unlocksMemory: "🤝 Shared Solitude"
+          unlocksMemory: "🤝 Shared Solitude",
+          responseSpeaker: "Dr. Marty Welsh",
+          responseKey: "marty",
+          responseText: "Then why did you even bother coming here to this holding room, Maury?"
         },
         {
           label: "Option B (Demanding Real Honesty): 'Even with all your supporters, you wrote about isolation. None of us escaped it.'",
@@ -620,15 +537,18 @@
           progressDelta: 10,
           type: "calm",
           tag: "🕊️ Universal Isolation",
-          unlocksMemory: "🤝 Shared Solitude"
+          unlocksMemory: "🤝 Shared Solitude",
+          responseSpeaker: "Dr. Marty Welsh",
+          responseKey: "marty",
+          responseText: "Then why did you even bother coming here to this holding room, Maury?"
         }
       ]
     },
     {
       speakerKey: "marty",
       speakerName: "Dr. Marty Welsh",
-      promptText: "Then why did you even bother coming here, Maury?",
-      headerText: "Step 6: Admitting the Desire to Matter",
+      promptText: null,
+      headerText: "Turn 6: Admitting the Desire to Matter",
       options: [
         {
           label: "Option A (Admitting Vulnerability): '(drops head) I don’t know. I thought maybe… after watching the movie they made about me… That someone would care. Or I could help someone. I thought I could matter, finally.'",
@@ -636,7 +556,10 @@
           progressDelta: 10,
           type: "calm",
           tag: "🕊️ Deep Vulnerability",
-          unlocksMemory: "💔 Longing to Matter"
+          unlocksMemory: "💔 Longing to Matter",
+          responseSpeaker: "Dr. Marty Welsh",
+          responseKey: "marty",
+          responseText: "Yeah, that makes sense. We all want to feel like we mattered to someone down there."
         },
         {
           label: "Option B (Wanting Control of Perspective): 'I came to set Laura straight! She got to say everything from her point of view. What about my point of view?'",
@@ -644,15 +567,18 @@
           progressDelta: 10,
           type: "tense",
           tag: "⚡ Narrative Control",
-          unlocksMemory: "💔 Longing to Matter"
+          unlocksMemory: "💔 Longing to Matter",
+          responseSpeaker: "Dr. Marty Welsh",
+          responseKey: "marty",
+          responseText: "Yeah, that makes sense. We all want to feel like we mattered to someone down there."
         }
       ]
     },
     {
       speakerKey: "marty",
       speakerName: "Dr. Marty Welsh",
-      promptText: "Yeah, that makes sense. You want to let it out so it wasn't all a waste.",
-      headerText: "Step 7: Expressing the Need for Love",
+      promptText: null,
+      headerText: "Turn 7: Expressing the Need for Love",
       options: [
         {
           label: "Option A (Unfiltered Heart): 'I don’t want love to be wasted on me. I want to be able to feel loved.'",
@@ -660,7 +586,10 @@
           progressDelta: 10,
           type: "calm",
           tag: "🕊️ Feeling Loved",
-          unlocksMemory: "❤️ Unwasted Love"
+          unlocksMemory: "❤️ Unwasted Love",
+          responseSpeaker: "Dr. Marty Welsh",
+          responseKey: "marty",
+          responseText: "(pats Maury on the back) We all do."
         },
         {
           label: "Option B (Fear of Wasted Potential): 'I just want what I lived through to mean something to someone down there.'",
@@ -668,15 +597,18 @@
           progressDelta: 10,
           type: "calm",
           tag: "🕊️ Meaningful Trauma",
-          unlocksMemory: "❤️ Unwasted Love"
+          unlocksMemory: "❤️ Unwasted Love",
+          responseSpeaker: "Dr. Marty Welsh",
+          responseKey: "marty",
+          responseText: "(pats Maury on the back) We all do."
         }
       ]
     },
     {
       speakerKey: "marty",
       speakerName: "Dr. Marty Welsh",
-      promptText: "(pats Maury on the back) We all do.",
-      headerText: "Step 8: Reacting to Physical Touch",
+      promptText: null,
+      headerText: "Turn 8: Reacting to Physical Touch",
       options: [
         {
           label: "Option A (Defensive Physical Reflex): '(springs up, ready to fight) Don’t you touch me! I’ll punch you.'",
@@ -684,7 +616,10 @@
           progressDelta: -5,
           type: "tense",
           tag: "⚡ Defensive Touch",
-          unlocksMemory: "🥊 Physical Defense"
+          unlocksMemory: "🥊 Physical Defense",
+          responseSpeaker: "Dr. Marty Welsh",
+          responseKey: "marty",
+          responseText: "I was just trying to comfort you, Maury."
         },
         {
           label: "Option B (Verbal Boundary Pushback): 'Don't touch me! Comfort me like in Plan 75 where they kill the old people off?'",
@@ -692,15 +627,18 @@
           progressDelta: -5,
           type: "tense",
           tag: "⚡ Plan 75 Provocation",
-          unlocksMemory: "🥊 Physical Defense"
+          unlocksMemory: "🥊 Physical Defense",
+          responseSpeaker: "Dr. Marty Welsh",
+          responseKey: "marty",
+          responseText: "I was just trying to comfort you, Maury."
         }
       ]
     },
     {
       speakerKey: "marty",
       speakerName: "Dr. Marty Welsh",
-      promptText: "I was just trying to comfort you, Maury.",
-      headerText: "Step 9: Attacking Systemic Euthanasia (Plan 75)",
+      promptText: null,
+      headerText: "Turn 9: Attacking Systemic Euthanasia (Plan 75)",
       options: [
         {
           label: "Option A (Harsh Accusation): 'I bet your wife would have loved to send you to something like Plan 75. I bet she was sick of taking care of you and thought you were just taking up space.'",
@@ -708,7 +646,10 @@
           progressDelta: 5,
           type: "tense",
           tag: "⚡ Burden Accusation",
-          unlocksMemory: "📜 Plan 75 Accusation"
+          unlocksMemory: "📜 Plan 75 Accusation",
+          responseSpeaker: "Dr. Marty Welsh",
+          responseKey: "marty",
+          responseText: "(looks away and says nothing)"
         },
         {
           label: "Option B (Fear of Helplessness): 'You couldn't even work at the end. Down there, society treats useless bodies like disposable resources.'",
@@ -716,15 +657,18 @@
           progressDelta: 5,
           type: "tense",
           tag: "⚡ Precarity Critique",
-          unlocksMemory: "📜 Plan 75 Accusation"
+          unlocksMemory: "📜 Plan 75 Accusation",
+          responseSpeaker: "Dr. Marty Welsh",
+          responseKey: "marty",
+          responseText: "(looks away and says nothing)"
         }
       ]
     },
     {
       speakerKey: "marty",
       speakerName: "Dr. Marty Welsh",
-      promptText: "(looks away in silent forgiveness) She probably did want that for me or for herself. I was a big burden at the end.",
-      headerText: "Step 10: Apologizing & Admitting Fear of Dying Alone",
+      promptText: null,
+      headerText: "Turn 10: Apologizing & Admitting Fear of Dying Alone",
       options: [
         {
           label: "Option A (Quiet Apology): '(sits down again, tired) I’m sorry. I wish I could have had a death like that. Comfortable. With someone. Not alone.'",
@@ -732,7 +676,10 @@
           progressDelta: 10,
           type: "calm",
           tag: "🕊️ Exhausted Apology",
-          unlocksMemory: "🕊️ Fear of Solitary Death"
+          unlocksMemory: "🕊️ Fear of Solitary Death",
+          responseSpeaker: "Dr. Marty Welsh",
+          responseKey: "marty",
+          responseText: "I forgive you, Maury. I was a big burden at the end. I do wish something like Plan 75 was around for me."
         },
         {
           label: "Option B (Longing for Goodbyes): 'I just wished I could have said goodbye to someone who cared.'",
@@ -740,15 +687,18 @@
           progressDelta: 10,
           type: "calm",
           tag: "🕊️ Farewell Longing",
-          unlocksMemory: "🕊️ Fear of Solitary Death"
+          unlocksMemory: "🕊️ Fear of Solitary Death",
+          responseSpeaker: "Dr. Marty Welsh",
+          responseKey: "marty",
+          responseText: "I forgive you, Maury. I was a big burden at the end. I do wish something like Plan 75 was around for me."
         }
       ]
     },
     {
       speakerKey: "marty",
       speakerName: "Dr. Marty Welsh",
-      promptText: "I forgive you, Maury. We don't choose how we are born, but it might be nice to choose how we die. Was there anything you felt good about in life?",
-      headerText: "Step 11: Inviting Dr. Welsh to the Canvas",
+      promptText: null,
+      headerText: "Turn 11: Inviting Dr. Welsh to the Canvas",
       options: [
         {
           label: "Option A (Artistic Invitation): 'I made good art apparently. Did you make art? Do you want to try?'",
@@ -756,7 +706,10 @@
           progressDelta: 10,
           type: "calm",
           tag: "🎨 Canvas Collaboration",
-          unlocksMemory: "🖌️ Joint Painting Session"
+          unlocksMemory: "🖌️ Joint Painting Session",
+          responseSpeaker: "Dr. Marty Welsh",
+          responseKey: "marty",
+          responseText: "(laughs) Okay, sure. (Dr. Welsh rolls over to the canvas. Maury joins him.)"
         },
         {
           label: "Option B (Shared Creation): 'You wrote your book. Let's see what we can put on this canvas together.'",
@@ -764,15 +717,18 @@
           progressDelta: 10,
           type: "calm",
           tag: "🎨 Creative Alliance",
-          unlocksMemory: "🖌️ Joint Painting Session"
+          unlocksMemory: "🖌️ Joint Painting Session",
+          responseSpeaker: "Dr. Marty Welsh",
+          responseKey: "marty",
+          responseText: "(laughs) Okay, sure. (Dr. Welsh rolls over to the canvas. Maury joins him.)"
         }
       ]
     },
     {
       speakerKey: "marty",
       speakerName: "Dr. Marty Welsh",
-      promptText: "(rolls over to the canvas with Maury) I was average looking, but I had a good family supporting me.",
-      headerText: "Step 12: Remembering Your Father",
+      promptText: null,
+      headerText: "Turn 12: Remembering Your Father",
       options: [
         {
           label: "Option A (Father's Expectations): 'I miss my father. He was strict and ambitious. He had high hopes for me. I think, in the end, I let him down.'",
@@ -780,7 +736,10 @@
           progressDelta: 10,
           type: "calm",
           tag: "🕊️ Paternal Grief",
-          unlocksMemory: "👴 Paternal Legacy"
+          unlocksMemory: "👴 Paternal Legacy",
+          responseSpeaker: "Dr. Marty Welsh",
+          responseKey: "marty",
+          responseText: "Is that why you want to go back to Earth?"
         },
         {
           label: "Option B (Desire for Redemption): 'I want to go back so his soul knows I didn't waste my second chance.'",
@@ -788,15 +747,18 @@
           progressDelta: 10,
           type: "calm",
           tag: "🕊️ Soul Redemption",
-          unlocksMemory: "👴 Paternal Legacy"
+          unlocksMemory: "👴 Paternal Legacy",
+          responseSpeaker: "Dr. Marty Welsh",
+          responseKey: "marty",
+          responseText: "Is that why you want to go back to Earth?"
         }
       ]
     },
     {
       speakerKey: "marty",
       speakerName: "Dr. Marty Welsh",
-      promptText: "In Dr. Nobel's book, they talk about belonging and purpose. What would you do differently this time?",
-      headerText: "Step 13: Shifting Goals for Reincarnation",
+      promptText: null,
+      headerText: "Turn 13: Shifting Goals for Reincarnation",
       options: [
         {
           label: "Option A (Chasing Connection): 'I’d make sure not to chase success so much but to chase connection and friendships.'",
@@ -804,7 +766,10 @@
           progressDelta: 10,
           type: "calm",
           tag: "🕊️ Connection Over Success",
-          unlocksMemory: "🤝 Purpose Shift"
+          unlocksMemory: "🤝 Purpose Shift",
+          responseSpeaker: "Dr. Marty Welsh",
+          responseKey: "marty",
+          responseText: "Yes, making friends can be hard. But Earth is getting more dangerous with climate catastrophes."
         },
         {
           label: "Option B (Fear of Wasted Friendships): 'I don't know how to make friends. I always feel like their love is wasted on me.'",
@@ -812,15 +777,18 @@
           progressDelta: 10,
           type: "tense",
           tag: "⚡ Connection Barrier",
-          unlocksMemory: "🤝 Purpose Shift"
+          unlocksMemory: "🤝 Purpose Shift",
+          responseSpeaker: "Dr. Marty Welsh",
+          responseKey: "marty",
+          responseText: "Yes, making friends can be hard. But Earth is getting more dangerous with climate catastrophes."
         }
       ]
     },
     {
       speakerKey: "marty",
       speakerName: "Dr. Marty Welsh",
-      promptText: "Yes, making friends can be hard. But Earth is getting more dangerous with climate catastrophes and issues.",
-      headerText: "Step 14: Finding Community in Disasters",
+      promptText: null,
+      headerText: "Turn 14: Finding Community in Disasters",
       options: [
         {
           label: "Option A (Shared Crisis Empathy): 'In a climate emergency, at least people have empathy. No one thinks you're a failure because a fire happened.'",
@@ -828,7 +796,10 @@
           progressDelta: 10,
           type: "calm",
           tag: "🕊️ Disaster Empathy",
-          unlocksMemory: "🔥 Climate Precarity"
+          unlocksMemory: "🔥 Climate Precarity",
+          responseSpeaker: "Dr. Marty Welsh",
+          responseKey: "marty",
+          responseText: "Like they didn’t have empathy for you?"
         },
         {
           label: "Option B (Public Grief vs Hidden Sickness): 'My disorder was hidden in secret. A climate disaster is public. It's not seen as your personal fault.'",
@@ -836,15 +807,18 @@
           progressDelta: 10,
           type: "calm",
           tag: "🕊️ Unhidden Suffering",
-          unlocksMemory: "🔥 Climate Precarity"
+          unlocksMemory: "🔥 Climate Precarity",
+          responseSpeaker: "Dr. Marty Welsh",
+          responseKey: "marty",
+          responseText: "Like they didn’t have empathy for you?"
         }
       ]
     },
     {
       speakerKey: "marty",
       speakerName: "Dr. Marty Welsh",
-      promptText: "I really don't want to become physically disabled again in the middle of all this catastrophe.",
-      headerText: "Step 15: Comparing Mental & Physical Disability",
+      promptText: null,
+      headerText: "Turn 15: Comparing Mental & Physical Disability",
       options: [
         {
           label: "Option A (Defending Schizoaffective Pain): 'Yeah, but you were just physically disabled. Mental illness isolates your mind completely.'",
@@ -852,7 +826,10 @@
           progressDelta: -5,
           type: "tense",
           tag: "⚡ Mental vs Physical",
-          unlocksMemory: "🧠 Disability Hierarchy"
+          unlocksMemory: "🧠 Disability Hierarchy",
+          responseSpeaker: "Dr. Marty Welsh",
+          responseKey: "marty",
+          responseText: "What if you were down there and couldn’t paint, Maury? What happened to you was bad, and what happened to me was bad too."
         },
         {
           label: "Option B (Fear of Losing Painting): '(looks away, ashamed) If I couldn't paint down there... I wouldn't have anything left.'",
@@ -860,15 +837,18 @@
           progressDelta: 10,
           type: "calm",
           tag: "🕊️ Artistic Vulnerability",
-          unlocksMemory: "🧠 Disability Hierarchy"
+          unlocksMemory: "🧠 Disability Hierarchy",
+          responseSpeaker: "Dr. Marty Welsh",
+          responseKey: "marty",
+          responseText: "What if you were down there and couldn’t paint, Maury? What happened to you was bad, and what happened to me was bad too."
         }
       ]
     },
     {
       speakerKey: "marty",
       speakerName: "Dr. Marty Welsh",
-      promptText: "When I look at Earth like this in our painting, and see how small people are, it's almost like the people are Earth.",
-      headerText: "Step 16: Coining 'We Are Earth'",
+      promptText: null,
+      headerText: "Turn 16: Coining 'We Are Earth'",
       options: [
         {
           label: "Option A (Universal Realization): 'When you look at the planet like that... We Are Earth.'",
@@ -876,7 +856,10 @@
           progressDelta: 15,
           type: "calm",
           tag: "✨ We Are Earth",
-          unlocksMemory: "🌍 We Are Earth Thesis"
+          unlocksMemory: "🌍 We Are Earth Thesis",
+          responseSpeaker: "Dr. Marty Welsh",
+          responseKey: "marty",
+          responseText: "Yeah. Exactly. We can have compassion for each other."
         },
         {
           label: "Option B (Shared Climate Destiny): 'If everyone is facing the same disasters, then none of us are truly alone.'",
@@ -884,15 +867,18 @@
           progressDelta: 15,
           type: "calm",
           tag: "✨ Shared Destiny",
-          unlocksMemory: "🌍 We Are Earth Thesis"
+          unlocksMemory: "🌍 We Are Earth Thesis",
+          responseSpeaker: "Dr. Marty Welsh",
+          responseKey: "marty",
+          responseText: "Yeah. Exactly. We can have compassion for each other."
         }
       ]
     },
     {
       speakerKey: "marty",
       speakerName: "Dr. Marty Welsh",
-      promptText: "Dr. Nobel said art uses overlapping neural networks as social interaction which makes art a powerful antidote to chronic loneliness.",
-      headerText: "Step 17: Realizing Flying Fish Paintings as Medicine",
+      promptText: null,
+      headerText: "Turn 17: Realizing Flying Fish Paintings as Medicine",
       options: [
         {
           label: "Option A (Flying Fish Alter Ego): 'You mean my flying fish paintings were an alter ego making me feel less lonely?'",
@@ -900,7 +886,10 @@
           progressDelta: 10,
           type: "calm",
           tag: "🎨 Flying Fish Alter Ego",
-          unlocksMemory: "🎨 Art as Loneliness Medicine"
+          unlocksMemory: "🎨 Art as Loneliness Medicine",
+          responseSpeaker: "Dr. Marty Welsh",
+          responseKey: "marty",
+          responseText: "Yup. Dr. Nobel said art uses overlapping neural networks as social interaction."
         },
         {
           label: "Option B (Vibrant Color Therapy): 'I painted them so magnificent because I wanted to create the joy I wasn't receiving.'",
@@ -908,15 +897,18 @@
           progressDelta: 10,
           type: "calm",
           tag: "🎨 Vibrant Healing",
-          unlocksMemory: "🎨 Art as Loneliness Medicine"
+          unlocksMemory: "🎨 Art as Loneliness Medicine",
+          responseSpeaker: "Dr. Marty Welsh",
+          responseKey: "marty",
+          responseText: "Yup. Dr. Nobel said art uses overlapping neural networks as social interaction."
         }
       ]
     },
     {
       speakerKey: "marty",
       speakerName: "Dr. Marty Welsh",
-      promptText: "(watches quietly as Maury completes the Baseball Earth painting with stitched hands holding across the globe) Wow, Maury.",
-      headerText: "Step 18: Final Reincarnation Covenant",
+      promptText: null,
+      headerText: "Turn 18: Final Reincarnation Covenant",
       options: [
         {
           label: "Option A (The Single Soul): 'We're a good team. Maybe we should go down there together. As one person.'",
@@ -924,7 +916,10 @@
           progressDelta: 15,
           type: "calm",
           tag: "✨ The Single Soul",
-          unlocksMemory: "⚾ Baseball Earth Covenant"
+          unlocksMemory: "⚾ Baseball Earth Covenant",
+          responseSpeaker: "Dr. Marty Welsh",
+          responseKey: "marty",
+          responseText: "Who knows – but it would make a great story!"
         },
         {
           label: "Option B (The Connected Duo): 'We're a good team. Let's reincarnate as parallel guides to bring art and medicine back to Earth.'",
@@ -932,33 +927,74 @@
           progressDelta: 15,
           type: "calm",
           tag: "🕊️ Parallel Guides",
-          unlocksMemory: "⚾ Baseball Earth Covenant"
+          unlocksMemory: "⚾ Baseball Earth Covenant",
+          responseSpeaker: "Dr. Marty Welsh",
+          responseKey: "marty",
+          responseText: "Two souls carrying the same realization? That would make an incredible story!"
         }
       ]
     }
   ];
 
   function init() {
-    document.getElementById("avatar-maury").style.backgroundImage = `url('${charImages.maury}')`;
-    document.getElementById("avatar-marty").style.backgroundImage = `url('${charImages.marty}')`;
     loadScriptStep();
   }
 
-  function typeWriterText(text, targetId, charKey) {
+  // Typewriter Engine with Completion Callback
+  function typeWriterText(text, targetElement, charKey, onComplete) {
     if (typewriterTimeout) clearTimeout(typewriterTimeout);
-    const elem = document.getElementById(targetId);
-    elem.textContent = "";
+    targetElement.textContent = "";
     let i = 0;
     const speed = charKey === 'maury' ? 18 : 28;
 
     function type() {
       if (i < text.length) {
-        elem.textContent += text.charAt(i);
+        targetElement.textContent += text.charAt(i);
         i++;
         typewriterTimeout = setTimeout(type, speed);
+      } else {
+        if (onComplete) onComplete();
       }
     }
     type();
+  }
+
+  // Appends a new dialogue entry with inline avatar image to the scrollable conversation log
+  function appendLogEntry(speakerName, speakerKey, text, onComplete) {
+    const logBox = document.getElementById("top-dialogue-box");
+    
+    const entryDiv = document.createElement("div");
+    entryDiv.className = "log-entry";
+
+    const headerDiv = document.createElement("div");
+    headerDiv.className = "log-header";
+
+    const avatarImg = document.createElement("img");
+    avatarImg.className = "log-avatar";
+    avatarImg.src = charImages[speakerKey] || "1.png";
+    avatarImg.alt = speakerName;
+
+    const speakerSpan = document.createElement("span");
+    speakerSpan.className = `log-speaker ${speakerKey === 'maury' ? 'maury-text' : 'marty-text'}`;
+    speakerSpan.innerText = speakerName;
+
+    headerDiv.appendChild(avatarImg);
+    headerDiv.appendChild(speakerSpan);
+
+    const textSpan = document.createElement("span");
+    textSpan.className = "log-text";
+
+    entryDiv.appendChild(headerDiv);
+    entryDiv.appendChild(textSpan);
+    logBox.appendChild(entryDiv);
+
+    // Auto-scroll to the bottom of the log
+    logBox.scrollTop = logBox.scrollHeight;
+
+    typeWriterText(`"${text}"`, textSpan, speakerKey, () => {
+      logBox.scrollTop = logBox.scrollHeight;
+      if (onComplete) onComplete();
+    });
   }
 
   function loadScriptStep() {
@@ -970,27 +1006,28 @@
     const currentStepData = gameScript[gameState.step];
     gameState.phase = 'dialogue';
 
-    // Hide choices & progress meter on Phase 1 (Dialogue Display)
+    // Hide choice area & meter container on Phase 1 (Dialogue Display)
     document.getElementById("choice-area").style.display = "none";
     document.getElementById("choice-area-header").style.display = "none";
     document.getElementById("meter-container").style.display = "none";
 
-    const dialogueBox = document.getElementById("top-dialogue-box");
-    const speakerTag = document.getElementById("speaker-tag");
-
-    dialogueBox.className = currentStepData.speakerKey === 'maury' ? 'maury-theme' : 'marty-theme';
-    speakerTag.className = currentStepData.speakerKey === 'maury' ? 'maury-text' : 'marty-text';
-    speakerTag.innerText = currentStepData.speakerName;
-
-    document.getElementById("card-maury").classList.toggle("active", currentStepData.speakerKey === 'maury');
-    document.getElementById("card-marty").classList.toggle("active", currentStepData.speakerKey === 'marty');
-
-    typeWriterText(`"${currentStepData.promptText}"`, "dialogue-text", currentStepData.speakerKey);
-
     const banner = document.getElementById("instruction-banner");
-    banner.className = "";
-    banner.innerText = "👇 Choose Maury's Response ->";
-    banner.onclick = () => transitionToChoicePhase(currentStepData);
+    banner.className = "no-click";
+    banner.onclick = null;
+    banner.innerText = "⏳ Character speaking...";
+
+    // Only append promptText if it exists (prevents duplicate prompts when prior step already rendered reaction)
+    if (currentStepData.promptText) {
+      appendLogEntry(currentStepData.speakerName, currentStepData.speakerKey, currentStepData.promptText, () => {
+        banner.className = "";
+        banner.innerText = "👇 Choose Maury's Response ->";
+        banner.onclick = () => transitionToChoicePhase(currentStepData);
+      });
+    } else {
+      banner.className = "";
+      banner.innerText = "👇 Choose Maury's Response ->";
+      banner.onclick = () => transitionToChoicePhase(currentStepData);
+    }
 
     document.getElementById("choices").innerHTML = "";
     updateProgressBar(0);
@@ -999,7 +1036,6 @@
   function transitionToChoicePhase(stepData) {
     gameState.phase = 'choice';
 
-    // Reveal choices & progress meter on Phase 2 (Choice Selection)
     document.getElementById("choice-area").style.display = "block";
     document.getElementById("choice-area-header").style.display = "block";
     document.getElementById("meter-container").style.display = "block";
@@ -1008,9 +1044,6 @@
   }
 
   function renderChoiceOptions(stepData) {
-    document.getElementById("card-maury").classList.add("active");
-    document.getElementById("card-marty").classList.remove("active");
-
     const banner = document.getElementById("instruction-banner");
     banner.className = "no-click";
     banner.onclick = null;
@@ -1043,14 +1076,7 @@
   }
 
   function executeChoiceOption(selectedOpt, stepData) {
-    const dialogueBox = document.getElementById("top-dialogue-box");
-    const speakerTag = document.getElementById("speaker-tag");
-
-    dialogueBox.className = 'maury-theme';
-    speakerTag.className = 'maury-text';
-    speakerTag.innerText = "Maury Ornest";
-
-    typeWriterText(`"${selectedOpt.dialogueText}"`, "dialogue-text", "maury");
+    gameState.phase = 'reaction';
 
     if (selectedOpt.unlocksMemory && !gameState.unlockedMemories.includes(selectedOpt.unlocksMemory)) {
       gameState.unlockedMemories.push(selectedOpt.unlocksMemory);
@@ -1061,11 +1087,28 @@
 
     document.getElementById("choices").innerHTML = "";
 
-    // Automatically advance to next scene after choice selection
-    gameState.step++;
-    setTimeout(() => {
-      loadScriptStep();
-    }, 1400);
+    document.getElementById("choice-area").style.display = "none";
+    document.getElementById("choice-area-header").style.display = "none";
+    document.getElementById("meter-container").style.display = "none";
+
+    const banner = document.getElementById("instruction-banner");
+    banner.className = "no-click";
+    banner.onclick = null;
+    banner.innerText = "⏳ Processing conversation...";
+
+    // Step 1: Append Maury's selected response to the scrollable dialogue log
+    appendLogEntry("Maury Ornest", "maury", selectedOpt.dialogueText, () => {
+      // Step 2: Append Dr. Welsh's reaction line to the scrollable dialogue log
+      appendLogEntry(selectedOpt.responseSpeaker, selectedOpt.responseKey, selectedOpt.responseText, () => {
+        // Step 3: Timer starts strictly AFTER Dr. Welsh's text has fully loaded
+        banner.className = "";
+        banner.innerText = "👉 Click to proceed to next step ->";
+        banner.onclick = () => {
+          gameState.step++;
+          loadScriptStep();
+        };
+      });
+    });
   }
 
   function renderMemoryTray() {
@@ -1094,43 +1137,37 @@
   function updateProgressBar(delta) {
     gameState.resolutionProgress = Math.max(10, Math.min(100, gameState.resolutionProgress + delta));
 
-    const statusLabel = document.getElementById("meter-status");
-    statusLabel.innerText = `Micro-Step ${Math.min(18, gameState.step + 1)} of 18`;
+    // Progress bar label updated to 'Turn X of 18'
+    const leftLabel = document.getElementById("meter-left-label");
+    leftLabel.innerText = `💥 Turn ${Math.min(18, gameState.step + 1)} of 18`;
 
     const fill = document.getElementById("meter-fill");
     fill.style.width = `${((gameState.step + 1) / 18) * 100}%`;
 
     if (gameState.resolutionProgress > 70) {
       document.body.style.background = "radial-gradient(circle at 50% 30%, #4a382c 0%, #1c140e 100%)";
-      statusLabel.style.color = "#059669";
     } else {
       document.body.style.background = "radial-gradient(circle at 50% 30%, #3a2e4c 0%, #1a162b 100%)";
-      statusLabel.style.color = "#d97706";
     }
   }
 
   function showEnding() {
-    const dialogueBox = document.getElementById("top-dialogue-box");
-    const speakerTag = document.getElementById("speaker-tag");
     const resetBtn = document.getElementById("reset-btn");
     const banner = document.getElementById("instruction-banner");
 
-    speakerTag.className = "maury-text";
-    speakerTag.innerText = "Ending: We Are Earth (Maury's Covenant)";
-    typeWriterText("The micro-step dialogue loop is complete. Inhabiting Maury's perspective, you turned defense mechanisms and trauma into a shared artistic covenant for return to Earth.", "dialogue-text", "maury");
+    appendLogEntry("Narrator", "maury", "The turn-based dialogue loop is complete. Inhabiting Maury's perspective, you turned defense mechanisms and trauma into a shared artistic covenant for return to Earth.", () => {
+      banner.className = "no-click";
+      banner.onclick = null;
+      banner.innerText = "✨ Storyboard Ended: Shared Reincarnation Covenant Reached";
+      banner.style.background = "linear-gradient(135deg, #10b981 0%, #059669 100%)";
+      banner.style.borderColor = "#34d399";
+      banner.style.boxShadow = "0 6px 0 #047857";
 
-    dialogueBox.style.borderColor = "#10b981";
-    banner.className = "no-click";
-    banner.onclick = null;
-    banner.innerText = "✨ Storyboard Ended: Shared Reincarnation Covenant Reached";
-    banner.style.background = "linear-gradient(135deg, #10b981 0%, #059669 100%)";
-    banner.style.borderColor = "#34d399";
-    banner.style.boxShadow = "0 6px 0 #047857";
-
-    document.getElementById("choice-area").style.display = "none";
-    document.getElementById("meter-container").style.display = "none";
-    document.getElementById("choices").innerHTML = "";
-    resetBtn.style.display = "block";
+      document.getElementById("choice-area").style.display = "none";
+      document.getElementById("meter-container").style.display = "none";
+      document.getElementById("choices").innerHTML = "";
+      resetBtn.style.display = "block";
+    });
   }
 
   function resetGame() {
@@ -1142,14 +1179,7 @@
       currentSpeaker: 'maury'
     };
 
-    const dialogueBox = document.getElementById("top-dialogue-box");
-    dialogueBox.className = "maury-theme";
-
-    const speakerTag = document.getElementById("speaker-tag");
-    speakerTag.className = "maury-text";
-    speakerTag.innerText = "Maury Ornest";
-
-    typeWriterText("Maury Ornest and Dr. Marty Welsh are waiting in a holding room for people who are about to re-incarnate on Earth...", "dialogue-text", "maury");
+    document.getElementById("top-dialogue-box").innerHTML = "";
 
     const banner = document.getElementById("instruction-banner");
     banner.className = "no-click";
